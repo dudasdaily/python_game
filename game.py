@@ -29,7 +29,7 @@ class Game:
         while True:
             self.clock.tick(60) # 60 FPS -> 60FPS를 맞추도록 sleep
             self.display.fill((14, 219, 248))
-            self.player.update((self.movement[1] - self.movement[0], 0)) # 플레이어의 위치를 업데이트
+            self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0)) # 플레이어의 위치를 업데이트
             self.tilemap.render(self.display)
             self.player.render(self.display) # 플레이어 이미지 로드!
 
