@@ -1,7 +1,8 @@
 import sys
 import pygame
 from scripts.entities import PhysicsEntitiy
-from scripts.utils import load_image
+from scripts.utils import load_image, load_images
+from scripts.tilemap import Tilemap
 
 class Game:
     def __init__(self):
@@ -13,10 +14,15 @@ class Game:
 
         self.player = PhysicsEntitiy(self, 'player', (50, 50), (8, 15))
         self.assets = {
+            'decor' : load_images('tiles/decor'),
+            'grass' : load_images('tiles/grass'),
+            'large_decor' : load_images('tiles/large_decor'),
+            'stone' : load_images('tiles/stone'),
             'player' : load_image('entities/player.png')
         }
         self.movement = [False, False]
 
+        self.tilemap = Tilemap(self, tile_size = 16)
         self.clock = pygame.time.Clock()
 
     def run(self):
@@ -24,6 +30,7 @@ class Game:
             self.clock.tick(60) # 60 FPS -> 60FPS를 맞추도록 sleep
             self.display.fill((14, 219, 248))
             self.player.update((self.movement[1] - self.movement[0], 0)) # 플레이어의 위치를 업데이트
+            self.tilemap.render(self.display)
             self.player.render(self.display) # 플레이어 이미지 로드!
 
             for event in pygame.event.get():
@@ -45,7 +52,7 @@ class Game:
                     if event.key == pygame.K_RIGHT:
                         self.movement[1] = False
 
-            self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
+            self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0)) 
             pygame.display.update() # 호출 할 때마다 변경된 사항을 screen에 띄어줌
 
 Game().run()
