@@ -28,6 +28,7 @@ class Tilemap:
         
     #     return tiles
     
+    # 충돌 감지 로직 변경! pos(플레이어의 왼쪽 위 좌표)의 주변타일 -> rect(히트박스)의 주변타일
     def physics_rects_in_region(self, rect):
         """
             엔티티의 히트박스(Rect)를 입력으로 받아서
