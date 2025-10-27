@@ -6,28 +6,44 @@ class PhysicsEntity:
         self.type = e_type # 엔티티 타입 : 'player'
         self.pos = list(pos)
         self.size = size
-        self.velocity = [1, 1]
+        self.velocity = [1.5, 1.5]
         self.collisions = { 'up' : False, 'down' : False, 'right' : False, 'left' : False } # 충돌이 일어났는가?
+
+        self.action = ''
+        self.anim_offset = (0, 2) # 이미지 패딩 처리
+        self.flip = False
+        self.set_action('idle')
 
     def rect(self):
         return pygame.Rect(self.pos[0], self.pos[1], self.size[0], self.size[1])
+    
+    def set_action(self, action):
+        if action != self.action: # 이거 안해주면 애니메이션 frame이 0으로 계속 새로 생성되어서 재생 안할거임
+            self.action = action
+            self.animation = self.game.assets[self.type + '/' + self.action].copy()
+
     
     def update(self, tilemap, movement=(0,0,0,0)):
         self.collisions = { 'up' : False, 'down' : False, 'right' : False, 'left' : False }
         x = (movement[0] * self.velocity[0] + movement[1] * self.velocity[0])
         y = (movement[2] * self.velocity[1] + movement[3] * self.velocity[1])
 
+        if (movement[0] != 0 and movement[1] != 0):
+            x = 0
+
+        if (movement[2] != 0 and movement[3] != 0):
+            y = 0
+
         frame_movement = (x, y)
 
         # x축 충돌 감지
         self.pos[0] += frame_movement[0]
         entity_rect = self.rect() # 충돌 감지를 위한 엔티티의 히트박스
-        for rect in tilemap.physics_rects_around(self.pos):
+        for rect in tilemap.physics_rects_around(self.rect()):
             if entity_rect.colliderect(rect):
                 if frame_movement[0] > 0: # 엔티티가 오른쪽으로 가다가 충돌
                     entity_rect.right = rect.left
                     self.collisions['right'] = True
-                
                 if frame_movement[0] < 0: # 엔티티가 왼쪽으로 가다가 충돌
                     entity_rect.left = rect.right
                     self.collisions['left'] = True
@@ -37,7 +53,7 @@ class PhysicsEntity:
         #y축 충돌 감지
         self.pos[1] += frame_movement[1]
         entity_rect = self.rect() # 충돌 감지를 위한 엔티티의 히트박스
-        for rect in tilemap.physics_rects_around(self.pos):
+        for rect in tilemap.physics_rects_around(self.rect()):
             if entity_rect.colliderect(rect):
                 if frame_movement[1] < 0: # 위로 가다가 충돌
                     entity_rect.top = rect.bottom
@@ -49,5 +65,32 @@ class PhysicsEntity:
 
                 self.pos[1] = entity_rect.y
 
+        self.animation.update()
+
     def render(self, surf, offset = (0, 0)):
-        surf.blit(self.game.assets['player'], (self.pos[0] - offset[0], self.pos[1] - offset[1]))
+        surf.blit(pygame.transform.flip(self.animation.img(), self.flip, False), (self.pos[0] - offset[0] + self.anim_offset[0], self.pos[1] - offset[1] + self.anim_offset[1]))
+
+class Player(PhysicsEntity):
+    def __init__(self, game, pos, size):
+        super().__init__(game, 'player', pos, size)
+        # self.air_time = 0
+
+    def update(self, tilemap, movement=(0,0)):
+        super().update(tilemap, movement=movement)
+        # self.air_time += 1
+        # if self.collisions['down']:
+        #     self.air_time = 0
+
+        # if self.air_time > 4:
+        #     self.set_action('jump')
+
+        if movement[2] != 0:
+            self.set_action('up')
+        elif movement[3] != 0:
+            self.set_action('down')
+        elif movement[0] != 0:
+            self.set_action('left')
+        elif movement[1] != 0:
+            self.set_action('right')
+        else:
+            self.set_action('idle')

@@ -14,22 +14,48 @@ class Tilemap:
             self.tile_map[str(3 + i) + ';10'] = {'type' : 'grass', 'variant' : 1, 'pos' : (3+i, 10)}
             self.tile_map['10;' + str(5+i)] = {'type' : 'stone', 'variant' : 1, 'pos' : (10, 5+i)}
 
-    def tiles_around(self, pos):
-        tiles = []
+    # def tiles_around(self, pos):
+    #     tiles = []
 
-        tile_loc = (int(pos[0] // self.tile_size), int(pos[1] // self.tile_size))
-
-        for offset in NEIGHBOR_OFFSET:
-            check_loc = str(tile_loc[0] + offset[0]) + ';' + str(tile_loc[1] + offset[1])
-
-            if check_loc in self.tile_map:
-                tiles.append(self.tile_map[check_loc])
+    #     tile_loc = (int(pos[0] // self.tile_size), int(pos[1] // self.tile_size))
         
+
+    #     for offset in NEIGHBOR_OFFSET:
+    #         check_loc = str(tile_loc[0] + offset[0]) + ';' + str(tile_loc[1] + offset[1])
+
+    #         if check_loc in self.tile_map:
+    #             tiles.append(self.tile_map[check_loc])
+        
+    #     return tiles
+    
+    def physics_rects_in_region(self, rect):
+        """
+            엔티티의 히트박스(Rect)를 입력으로 받아서
+            이 히트박스 주변 타일들의 딕셔너리가 들어간 리스트를 리턴한다!
+        """
+        tiles = []
+        tile = self.tile_size
+
+        x0 = rect.left // tile - 1
+        x1 = rect.right // tile + 1
+        y0 = rect.top // tile - 1
+        y1 = rect.bottom // tile + 1
+
+        for tx in range(int(x0), int(x1) + 1):
+            for ty in range(int(y0), int(y1) + 1):
+                loc = f"{tx};{ty}"
+                if loc in self.tile_map and self.tile_map[loc]['type'] in PHYSICS_TILES:
+                    tiles.append(self.tile_map[loc])
+
         return tiles
 
-    def physics_rects_around(self, pos):
+    def physics_rects_around(self, rect):
+        """
+            플레이어의 주변 타일들 중,
+            물리 작용을 하는 타일들의 히트박스 리스트를 리턴한다!
+        """
         rects = []
-        for tile in self.tiles_around(pos):
+        for tile in self.physics_rects_in_region(rect):
             if tile['type'] in PHYSICS_TILES:
                 rects.append(pygame.Rect(tile['pos'][0] * self.tile_size, tile['pos'][1] * self.tile_size, self.tile_size, self.tile_size))
         return rects
