@@ -1,3 +1,4 @@
+import json
 import pygame
 
 NEIGHBOR_OFFSET = [(-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (0, 0), (-1, 1), (0, 1), (1, 1)]
@@ -54,6 +55,21 @@ class Tilemap:
             if tile['type'] in PHYSICS_TILES:
                 rects.append(pygame.Rect(tile['pos'][0] * self.tile_size, tile['pos'][1] * self.tile_size, self.tile_size, self.tile_size))
         return rects
+    
+    def save(self, path):
+        f = open(path, 'w')
+        json.dump({'tilemap' : self.tile_map, 'tile_size' : self.tile_size, 'offgrid' : self.off_grid_tiles}, f)
+        f.close()
+
+    def load(self, path):
+        f = open(path, 'r')
+        map_data = json.load(f)
+        f.close
+
+        self.tile_map = map_data['tilemap']
+        self.tile_sioze = map_data['tile_size']
+        self.off_grid_tiles = map_data['offgrid']
+        
 
     def render(self, surf, offset=(0, 0)):
         for tile in self.off_grid_tiles:

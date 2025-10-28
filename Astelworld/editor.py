@@ -5,6 +5,7 @@ from scripts.utils import load_image, load_images
 from scripts.tilemap import Tilemap
 
 RENDER_SCALE = 2.0
+MAP_PATH = 'map.json'
 
 class Editor:
     def __init__(self):
@@ -20,6 +21,12 @@ class Editor:
 
         self.movement = [0, 0, 0, 0] # 좌, 우, 상, 하
         self.tilemap = Tilemap(self, tile_size = 16)
+        
+        try:
+            self.tilemap.load(MAP_PATH)
+        except FileNotFoundError:
+            pass
+        
         self.scroll = [0, 0] # 카메라 위치(position)
         self.clock = pygame.time.Clock()
 
@@ -123,6 +130,8 @@ class Editor:
                         self.shift = True
                     if event.key == pygame.K_g:
                         self.ongrid = not self.ongrid
+                    if event.key == pygame.K_o:
+                        self.tilemap.save(MAP_PATH)
 
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_a:
