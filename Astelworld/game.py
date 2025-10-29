@@ -18,13 +18,12 @@ class Game:
             'stone' : load_images('tiles/stone'),
             'player' : load_image('entities/player.png'),
             'background' : load_image('background.png'),
-            'player/idle' : Animation(load_images('entities/player/idle'), img_dur=12),
-            'player/up' : Animation(load_images('entities/player/up')),
-            'player/down' : Animation(load_images('entities/player/down') ),
-            'player/left' : Animation(load_images('entities/player/left')),
-            'player/right' : Animation(load_images('entities/player/right')),
+            'player/idle' : Animation(load_images('entities/player/idle', (226, 138, 172)), img_dur=10),
+            'player/jump' : Animation(load_images('entities/player/jump', (226, 138, 172))),
+            'player/charging' : Animation(load_images('entities/player/charging', (226, 138, 172))),
+            'player/run' : Animation(load_images('entities/player/run', (226, 138, 172))),
         }
-        self.player = Player(self, (50, 50), (15, 25))
+        self.player = Player(self, (50, 50), (28, 27))
         self.movement = [0, 0, 0, 0]
         self.tilemap = Tilemap(self, tile_size = 16)
         self.tilemap.load('map.json')
@@ -82,9 +81,9 @@ class Game:
                             factor = 0
                             if 0 <= self.player.charge < 750:
                                 factor = 1.25
-                            if 750 <= self.player.charge < 1500:
+                            if 750 <= self.player.charge < 1000:
                                 factor = 2
-                            if self.player.charge >= 1500:
+                            if self.player.charge >= 1000:
                                 factor = 3
 
                             self.player.velocity[0] = factor
@@ -93,6 +92,11 @@ class Game:
             self.player.update(self.tilemap, self.movement)
             self.tilemap.render(self.display, render_scroll)
             self.player.render(self.display, render_scroll)
+            # 플레이어 히트박스 표시
+            # self.rectangle = self.player.rect()
+            # self.rectangle.x -= render_scroll[0]
+            # self.rectangle.y -= render_scroll[1]
+            # pygame.draw.rect(self.display, (0, 0, 0), self.rectangle, 2)
 
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
             pygame.display.update()

@@ -10,7 +10,7 @@ class PhysicsEntity:
         self.collisions = { 'up' : False, 'down' : False, 'right' : False, 'left' : False } # 충돌이 일어났는가?
 
         self.action = ''
-        self.anim_offset = (0, 2) # 이미지 패딩 처리
+        self.anim_offset = (0, -5) # 이미지 패딩 처리
         self.flip = False
         self.is_fly = False
         self.set_action('idle')
@@ -92,6 +92,9 @@ class Player(PhysicsEntity):
         if self.is_fly and not self.is_charging and self.jump_cnt > 0:
             movement = self.direction.copy()
 
+        if self.is_fly:
+            self.air_time += 1
+
         super().update(tilemap, movement = movement)
 
         if self.collisions['down']:
@@ -99,12 +102,19 @@ class Player(PhysicsEntity):
                 self.jump_cnt = 0
                 self.is_fly = False
                 self.game.movement = [0, 0, 0, 0]
+                self.air_time = 0
 
             self.velocity[1] = 1.5
 
-        if self.game.movement[0] != 0:
-            self.set_action('left')
+        if self.is_charging:
+            self.set_action('charging')
+        elif self.air_time >= 4:
+            self.set_action('jump')
+        elif self.game.movement[0] != 0:
+            self.flip = True
+            self.set_action('run')
         elif self.game.movement[1] != 0:
-            self.set_action('right')
+            self.flip = False
+            self.set_action('run')
         else:
             self.set_action('idle')
