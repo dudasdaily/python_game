@@ -25,6 +25,7 @@ class Game:
         self.player = Player(self, (50, 50), (15, 25))
         self.movement = [0, 0, 0, 0] # 좌, 우, 상, 하
         self.tilemap = Tilemap(self, tile_size = 16)
+        self.tilemap.load('map.json')
         self.scroll = [0, 0] # 카메라 위치(position)
         self.clock = pygame.time.Clock()
 
@@ -61,9 +62,6 @@ class Game:
                         self.movement[2] = -1
                     if event.key == pygame.K_DOWN:
                         self.movement[3] = 1
-
-                    if event.key == pygame.K_F1:
-                        print()
 
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT:

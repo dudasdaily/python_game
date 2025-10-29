@@ -1,6 +1,19 @@
 import json
 import pygame
 
+AUTOTILE_MAP = {
+    tuple(sorted([(1, 0), (0, 1)])) : 0, # (1,0), (0,1) 이 연결된 경우 variant = 0
+    tuple(sorted([(1, 0), (0, 1) , (-1, 0)])) : 1,
+    tuple(sorted([(-1, 0), (0, 1)])) : 2,
+    tuple(sorted([(-1, 0), (0, -1) , (0, 1)])) : 3,
+    tuple(sorted([(-1, 0), (0, -1)])) : 4,
+    tuple(sorted([(-1, 0), (0, -1) , (1, 0)])) : 5,
+    tuple(sorted([(1, 0), (0, -1) ])) : 6,
+    tuple(sorted([(1, 0), (0, -1) , (0, 1)])) : 7,
+    tuple(sorted([(1, 0), (-1, 0) , (0, 1), (0, -1)])) : 8,
+}
+AUTOTILE_TYPES = {'grass', 'stone'}
+
 NEIGHBOR_OFFSET = [(-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (0, 0), (-1, 1), (0, 1), (1, 1)]
 PHYSICS_TILES = {'grass', 'stone'}
 
@@ -56,6 +69,23 @@ class Tilemap:
                 rects.append(pygame.Rect(tile['pos'][0] * self.tile_size, tile['pos'][1] * self.tile_size, self.tile_size, self.tile_size))
         return rects
     
+    def autotile(self):
+        for loc in self.tile_map:
+            tile = self.tile_map[loc]
+            neighbors = set()
+
+            for shift in [(1,0), (-1,0), (0, -1), (0, 1)]:
+                check_loc = f"{tile['pos'][0] + shift[0]};{tile['pos'][1] + shift[1]}"
+                if check_loc in self.tile_map:
+                    if self.tile_map[check_loc]['type'] == tile['type']:
+                        neighbors.add(shift)
+
+            neighbors = tuple(sorted(neighbors))
+            if (tile['type'] in AUTOTILE_TYPES) and (neighbors in AUTOTILE_MAP):
+                tile['variant'] = AUTOTILE_MAP[neighbors]
+
+
+
     def save(self, path):
         f = open(path, 'w')
         json.dump({'tilemap' : self.tile_map, 'tile_size' : self.tile_size, 'offgrid' : self.off_grid_tiles}, f)
