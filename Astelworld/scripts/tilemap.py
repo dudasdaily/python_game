@@ -84,8 +84,6 @@ class Tilemap:
             if (tile['type'] in AUTOTILE_TYPES) and (neighbors in AUTOTILE_MAP):
                 tile['variant'] = AUTOTILE_MAP[neighbors]
 
-
-
     def save(self, path):
         f = open(path, 'w')
         json.dump({'tilemap' : self.tile_map, 'tile_size' : self.tile_size, 'offgrid' : self.off_grid_tiles}, f)
@@ -97,7 +95,7 @@ class Tilemap:
         f.close
 
         self.tile_map = map_data['tilemap']
-        self.tile_sioze = map_data['tile_size']
+        self.tile_size = map_data['tile_size']
         self.off_grid_tiles = map_data['offgrid']
         
 

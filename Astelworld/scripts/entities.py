@@ -12,6 +12,7 @@ class PhysicsEntity:
         self.action = ''
         self.anim_offset = (0, 2) # 이미지 패딩 처리
         self.flip = False
+        self.is_fly = False
         self.set_action('idle')
 
     def rect(self):
@@ -25,14 +26,14 @@ class PhysicsEntity:
     
     def update(self, tilemap, movement=(0,0,0,0)):
         self.collisions = { 'up' : False, 'down' : False, 'right' : False, 'left' : False }
-        x = (movement[0] * self.velocity[0] + movement[1] * self.velocity[0])
-        y = (movement[2] * self.velocity[1] + movement[3] * self.velocity[1])
+        
+        x = (self.velocity[0] * (movement[1] - movement[0]))
+        y = self.velocity[1]
+
+        # print(x, y)
 
         if (movement[0] != 0 and movement[1] != 0):
             x = 0
-
-        if (movement[2] != 0 and movement[3] != 0):
-            y = 0
 
         frame_movement = (x, y)
 
@@ -62,8 +63,15 @@ class PhysicsEntity:
                 if frame_movement[1] > 0: # 아래로 가다가 충돌
                     entity_rect.bottom = rect.top
                     self.collisions['down'] = True
-
                 self.pos[1] = entity_rect.y
+
+
+        self.velocity[0] = max(1.5, self.velocity[0] - 0.1)
+        self.velocity[1] = min(5, self.velocity[1] + 0.1)
+
+        # if self.is_fly and self.collisions['down']:
+        #     self.game.movement = [0, 0, 0, 0]
+        #     self.is_fly = False
 
         self.animation.update()
 
@@ -73,24 +81,30 @@ class PhysicsEntity:
 class Player(PhysicsEntity):
     def __init__(self, game, pos, size):
         super().__init__(game, 'player', pos, size)
-        # self.air_time = 0
+        self.air_time = 0
+        self.jump_cnt = 0
+        self.is_charging = False
 
-    def update(self, tilemap, movement=(0,0)):
-        super().update(tilemap, movement=movement)
-        # self.air_time += 1
-        # if self.collisions['down']:
-        #     self.air_time = 0
+        self.direction = [0, 0, 0, 0]
+        self.charge = 0
 
-        # if self.air_time > 4:
-        #     self.set_action('jump')
+    def update(self, tilemap, movement=(0,0,0,0)):
+        if self.is_fly and not self.is_charging and self.jump_cnt > 0:
+            movement = self.direction.copy()
 
-        if movement[2] != 0:
-            self.set_action('up')
-        elif movement[3] != 0:
-            self.set_action('down')
-        elif movement[0] != 0:
+        super().update(tilemap, movement = movement)
+
+        if self.collisions['down']:
+            if self.is_fly:
+                self.jump_cnt = 0
+                self.is_fly = False
+                self.game.movement = [0, 0, 0, 0]
+
+            self.velocity[1] = 1.5
+
+        if self.game.movement[0] != 0:
             self.set_action('left')
-        elif movement[1] != 0:
+        elif self.game.movement[1] != 0:
             self.set_action('right')
         else:
             self.set_action('idle')
