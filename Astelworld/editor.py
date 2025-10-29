@@ -13,6 +13,7 @@ class Editor:
         self.screen = pygame.display.set_mode((640, 480))
         self.display = pygame.Surface((320, 240))
         self.assets = {
+            'snow' : load_images('tiles/snow'),
             'decor' : load_images('tiles/decor'), 
             'grass' : load_images('tiles/grass'),
             'large_decor' : load_images('tiles/large_decor'),
@@ -47,7 +48,6 @@ class Editor:
             self.scroll[0] += (self.movement[0] + self.movement[1]) * 2
             self.scroll[1] += (self.movement[2] + self.movement[3]) * 2
 
-
             render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
             self.tilemap.render(self.display, offset=render_scroll)
 
@@ -69,7 +69,6 @@ class Editor:
 
             if self.clicking and self.ongrid:
                 self.tilemap.tile_map[f"{tile_pos[0]};{tile_pos[1]}"] = {'type' : self.tile_list[self.tile_group], 'variant' : self.tile_variant, 'pos' : tile_pos}
-            
 
             if self.right_clicking:
                 tile_loc = f"{tile_pos[0]};{tile_pos[1]}"

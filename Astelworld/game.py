@@ -10,6 +10,7 @@ class Game:
         self.screen = pygame.display.set_mode((640, 480))
         self.display = pygame.Surface((320, 240))
         self.assets = {
+            'snow' : load_images('tiles/snow'),
             'decor' : load_images('tiles/decor'),
             'grass' : load_images('tiles/grass'),
             'large_decor' : load_images('tiles/large_decor'),
