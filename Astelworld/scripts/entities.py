@@ -7,6 +7,7 @@ class PhysicsEntity:
         self.pos = list(pos)
         self.size = size
         self.velocity = [1.5, 1.5]
+        self.external_force = [0, 0]
         self.collisions = { 'up' : False, 'down' : False, 'right' : False, 'left' : False } # 충돌이 일어났는가?
 
         self.action = ''
@@ -97,6 +98,20 @@ class Player(PhysicsEntity):
 
         super().update(tilemap, movement = movement)
 
+        if self.collisions['left']:
+            if self.is_fly:
+                self.direction[0] = 0
+                self.direction[1] = 1
+                self.velocity[0] = 2
+                self.velocity[1] = -2
+
+        elif self.collisions['right']:
+            if self.is_fly:
+                self.direction[0] = 1
+                self.direction[1] = 0
+                self.velocity[0] = 2
+                self.velocity[1] = -2
+
         if self.collisions['down']:
             if self.is_fly:
                 self.jump_cnt = 0
@@ -104,7 +119,7 @@ class Player(PhysicsEntity):
                 self.game.movement = [0, 0, 0, 0]
                 self.air_time = 0
 
-            self.velocity[1] = 1.5
+            self.velocity[1] = 1.5        
 
         if self.is_charging:
             self.set_action('charging')
