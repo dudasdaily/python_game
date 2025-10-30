@@ -1,4 +1,5 @@
 import pygame
+from pygame.math import Vector2
 
 class PhysicsEntity:
     def __init__(self, game, e_type, pos, size):
@@ -7,7 +8,10 @@ class PhysicsEntity:
         self.pos = list(pos)
         self.size = size
         self.velocity = [1.5, 1.5]
-        self.external_force = [0, 0]
+
+        self.collision_normal = Vector2()
+        self.frame_move = Vector2()
+
         self.collisions = { 'up' : False, 'down' : False, 'right' : False, 'left' : False } # 충돌이 일어났는가?
 
         self.action = ''
@@ -31,12 +35,15 @@ class PhysicsEntity:
         x = (self.velocity[0] * (movement[1] - movement[0]))
         y = self.velocity[1]
 
-        # print(x, y)
-
         if (movement[0] != 0 and movement[1] != 0):
             x = 0
 
+        # 이번 프레임 이동 저장
+        self.frame_move = Vector2(x, y)
+
         frame_movement = (x, y)
+
+        normal_sum = Vector2()
 
         # x축 충돌 감지
         self.pos[0] += frame_movement[0]
@@ -46,9 +53,11 @@ class PhysicsEntity:
                 if frame_movement[0] > 0: # 엔티티가 오른쪽으로 가다가 충돌
                     entity_rect.right = rect.left
                     self.collisions['right'] = True
+                    normal_sum += Vector2(-1, 0)
                 if frame_movement[0] < 0: # 엔티티가 왼쪽으로 가다가 충돌
                     entity_rect.left = rect.right
                     self.collisions['left'] = True
+                    normal_sum += Vector2(1, 0)
 
                 self.pos[0] = entity_rect.x
 
@@ -66,6 +75,7 @@ class PhysicsEntity:
                     self.collisions['down'] = True
                 self.pos[1] = entity_rect.y
 
+        self.collision_normal = normal_sum.normalize() if normal_sum.length() > 0 else Vector2()
 
         self.velocity[0] = max(1.5, self.velocity[0] - 0.1)
         self.velocity[1] = min(5, self.velocity[1] + 0.1)
@@ -98,19 +108,8 @@ class Player(PhysicsEntity):
 
         super().update(tilemap, movement = movement)
 
-        if self.collisions['left']:
-            if self.is_fly:
-                self.direction[0] = 0
-                self.direction[1] = 1
-                self.velocity[0] = 2
-                self.velocity[1] = -2
-
-        elif self.collisions['right']:
-            if self.is_fly:
-                self.direction[0] = 1
-                self.direction[1] = 0
-                self.velocity[0] = 2
-                self.velocity[1] = -2
+        if self.is_fly and self.collision_normal.length() > 0:
+            self._bounce_by_reflection(restitution=0.6, friction=0.1)
 
         if self.collisions['down']:
             if self.is_fly:
@@ -133,3 +132,35 @@ class Player(PhysicsEntity):
             self.set_action('run')
         else:
             self.set_action('idle')
+
+    def _bounce_by_reflection(self, restitution=0.6, friction=0.1):
+        """
+        restitution(탄성계수): 0(완전 비탄성)~1(완전 탄성)
+        friction(마찰): 접선 성분 감쇠율
+        """
+        v_in = Vector2(self.frame_move.x, self.frame_move.y)       # 충돌 직전 이동 벡터
+        n = Vector2(self.collision_normal.x, self.collision_normal.y)
+
+        # 분해: v = v_n + v_t
+        v_n = n * v_in.dot(n)           # 법선 성분
+        v_t = v_in - v_n                # 접선 성분
+
+        # 반사: 법선 성분 뒤집고(계수 적용), 접선은 마찰로 감쇠
+        v_out = (-restitution) * v_n + (1 - friction) * v_t
+
+        # 엔진의 내부 표현에 맞춰 재설정
+        # 1) 수평 속도/방향
+        if abs(v_out.x) < 0.05:
+            # 거의 수직이라면 좌/우 입력을 해제
+            self.direction = [0, 0, 0, 0]
+            self.velocity[0] = 1.5
+        else:
+            if v_out.x < 0:
+                self.direction = [1, 0, 0, 0]  # 왼쪽 유지
+            else:
+                self.direction = [0, 1, 0, 0]  # 오른쪽 유지
+            self.velocity[0] = max(1.5, abs(v_out.x))
+
+        # 2) 수직 속도
+        # 이 엔진은 +y가 아래이므로 v_out.y가 음수면 위로 튕김
+        self.velocity[1] = max(-5, min(5, v_out.y))
