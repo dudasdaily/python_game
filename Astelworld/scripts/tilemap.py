@@ -21,7 +21,7 @@ class Tilemap:
     def __init__(self, game, tile_size = 16):
         self.game = game
         self.tile_size = tile_size
-        self.tile_map = {}
+        self.tile_map = {} # tile_map = {'grass' : {}, ... } ,tile_map['grass'] = { 'type' : 'grass', 'variant' : 0, 'pos' : (xpos, ypos)}
         self.off_grid_tiles = []
 
     # def tiles_around(self, pos):
@@ -97,6 +97,31 @@ class Tilemap:
         self.tile_map = map_data['tilemap']
         self.tile_size = map_data['tile_size']
         self.off_grid_tiles = map_data['offgrid']
+
+    # id_pair : (type, variant)
+    # id_pairs : [id_pair, ...]
+    def extract(self, id_pairs, keep=False):
+        # [(타일타입1, variant1), (타일타입2, variant2)] 이 타일들의 정보들을 담은 리스트를 준다!
+        matches = []
+    
+        for tile in self.off_grid_tiles.copy():
+            if (tile['type'], tile['variant']) in id_pairs:
+                matches.append(tile.copy())
+                if not keep:
+                    self.off_grid_tiles.remove(tile)
+
+        for loc in self.tile_map:
+            tile = self.tile_map[loc]
+            if (tile['type'], tile['variant']) in id_pairs:
+                matches.append(tile.copy())
+                matches[-1]['pos'] = matches[-1]['pos'].copy()
+                # 타일 좌표 -> 픽셀좌표
+                matches[-1]['pos'][0] *= self.tile_size
+                matches[-1]['pos'][1] *= self.tile_size
+
+                if not keep:
+                    del self.tile_map[loc]
+        return matches
         
 
     def render(self, surf, offset=(0, 0)):
