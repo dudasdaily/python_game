@@ -1,3 +1,4 @@
+import math
 import pygame
 import random
 import sys
@@ -25,7 +26,7 @@ class Game:
             'player/jump' : Animation(load_images('entities/player/jump', (226, 138, 172))),
             'player/charging' : Animation(load_images('entities/player/charging', (226, 138, 172))),
             'player/run' : Animation(load_images('entities/player/run', (226, 138, 172))),
-            'particle/leaf' : Animation(load_images('particles/leaf')),
+            'particle/leaf' : Animation(load_images('particles/leaf'), img_dur=20, loop=False),
         }
         self.player = Player(self, (50, 50), (28, 27))
         self.movement = [0, 0, 0, 0]
@@ -111,6 +112,8 @@ class Game:
             for particle in self.particles.copy():
                 kill = particle.update()
                 particle.render(self.display, offset=render_scroll)
+                if particle.type == 'leaf':
+                    particle.pos[0] += math.sin(particle.animation.frame * 0.035) * 0.3 # 낙엽을 좌우로 흔들어줌
                 if kill:
                     self.particles.remove(particle)
 
