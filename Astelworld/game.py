@@ -3,7 +3,7 @@ import pygame
 import random
 import sys
 
-from scripts.entities import PhysicsEntity, Player
+from scripts.entities import PhysicsEntity, Player, Enemy
 from scripts.utils import load_image, load_images, Animation
 from scripts.tilemap import Tilemap
 from scripts.particle import Particle
@@ -28,6 +28,8 @@ class Game:
             'player/charging' : Animation(load_images('entities/player/charging', (226, 138, 172))),
             'player/run' : Animation(load_images('entities/player/run', (226, 138, 172))),
             'player/fall' : Animation(load_images('entities/player/fall', (226, 138, 172))),
+            'enemy/idle' : Animation(load_images('entities/enemy/idle'), img_dur=6),
+            'enemy/run' : Animation(load_images('entities/enemy/run'), img_dur=6),
             'particle/leaf' : Animation(load_images('particles/leaf'), img_dur=20, loop=False),
             'particle/particle' : Animation(load_images('particles/particle'), img_dur=5, loop=False),
             'particle/burst' : Animation(load_images('particles/particle'), img_dur=20, loop=False),
@@ -37,10 +39,20 @@ class Game:
         self.tilemap = Tilemap(self, tile_size = 16)
         self.tilemap.load('map.json')
 
+        # 파티클
         self.leaf_spawners = []
         for tree in self.tilemap.extract([('large_decor', 2)], keep = True):
             self.leaf_spawners.append(pygame.Rect(4 + tree['pos'][0], 4 + tree['pos'][1], 23, 13))
 
+        # 적 스포너
+        self.enemies = []
+        for spawner in self.tilemap.extract([('spawners', 0), ('spawners', 1)], keep=False):
+            # print(spawner)
+            if spawner['variant'] == 0:
+                self.player.pos = spawner['pos']
+            else:
+                self.enemies.append(Enemy(self, spawner['pos'], (8, 15)))
+            
         self.particles = []
 
         self.scroll = [0, 0] # 카메라 위치(position)
@@ -98,8 +110,13 @@ class Game:
                         self.player.charge = pygame.time.get_ticks() - self.player.charge
                         self.player.jump()
 
-            self.player.update(self.tilemap, self.movement)
             self.tilemap.render(self.display, render_scroll)
+
+            for enemy in self.enemies.copy():
+                enemy.update(self.tilemap, (0, 0))
+                enemy.render(self.display, offset=render_scroll)
+
+            self.player.update(self.tilemap, self.movement)
             self.player.render(self.display, render_scroll)
             
             for particle in self.particles.copy():

@@ -1,3 +1,5 @@
+from shutil import move
+from numpy import tile
 import pygame
 import math
 import random
@@ -53,7 +55,7 @@ class PhysicsEntity:
             if entity_rect.colliderect(rect):
                 if frame_movement[0] > 0: # 엔티티가 오른쪽으로 가다가 충돌
                     entity_rect.right = rect.left
-                    self.collisions['right'] = True
+                    self.collisions['right'] = False
                     normal_sum += Vector2(-1, 0)
                 if frame_movement[0] < 0: # 엔티티가 왼쪽으로 가다가 충돌
                     entity_rect.left = rect.right
@@ -70,6 +72,7 @@ class PhysicsEntity:
                 if frame_movement[1] < 0: # 위로 가다가 충돌
                     entity_rect.top = rect.bottom
                     self.collisions['up'] = True
+                    normal_sum += Vector2(0, 1)
 
                 if frame_movement[1] > 0: # 아래로 가다가 충돌
                     entity_rect.bottom = rect.top
@@ -85,6 +88,21 @@ class PhysicsEntity:
 
     def render(self, surf, offset = (0, 0)):
         surf.blit(pygame.transform.flip(self.animation.img(), self.flip, False), (self.pos[0] - offset[0] + self.anim_offset[0], self.pos[1] - offset[1] + self.anim_offset[1]))
+
+
+class Enemy(PhysicsEntity):
+    def __init__(self, game, pos, size):
+        super().__init__(game, 'enemy', pos, size)
+        self.walking = 0 # 적이 걷는 시간의 타이머, 0이되면 멈춘다
+
+    def update(self, tilemap, movement=(0, 0)):
+        if self.walking:
+            movement = (movement[0] - 0.5 if self.flip else 0.5, movement[1])
+            self.walking = max(0, self.walking - 1)
+        elif random.random() < 0.01: # 적이 안걷고 있으면, 60fps에서 평균적으로 100프레임당 한번 씩(약 1.67초) 적이 걸을 타이머를 랜덤(30 ~ 119)로 세팅한다!==> 
+            self.walking = random.randint(30, 120)
+
+        super().update(tilemap, movement=movement)
 
 class Player(PhysicsEntity):
     def __init__(self, game, pos, size):
@@ -118,7 +136,7 @@ class Player(PhysicsEntity):
             if self.is_fly:
                 self.jump_cnt = 1
                 self.is_fly = False
-                self.game.movement = [0, 0, 0, 0]
+                # self.game.movement = [0, 0, 0, 0]
                 self.air_time = 0
                 self.factor = 0
 
@@ -138,10 +156,10 @@ class Player(PhysicsEntity):
             self.set_action('charging')
         elif self.air_time >= 4:
             self.set_action('jump')
-        elif self.last_movement[0] != 0:
+        elif movement[0] != 0:
             self.flip = True
             self.set_action('run')
-        elif self.last_movement[1] != 0:
+        elif movement[1] != 0:
             self.flip = False
             self.set_action('run')
         else:
@@ -154,14 +172,22 @@ class Player(PhysicsEntity):
         if self.is_charging:
             self.is_charging = False
             if 0 <= self.charge < 500:
-                self.factor = 1.25
+                self.factor = 1
+                self.velocity[0] = 3
+                self.velocity[1] = -1.5
+
             if 500 <= self.charge < 1000:
                 self.factor = 2
+                self.velocity[0] = 3
+                self.velocity[1] = -3
             if self.charge >= 1000:
                 self.factor = 3
+                self.velocity[0] = 3
+                self.velocity[1] = -5
+                
 
-            self.velocity[0] = self.factor
-            self.velocity[1] = -1.5 * self.factor
+            # self.velocity[0] = self.factor
+            # self.velocity[1] = -1.5 * self.factor
 
     def jump_attak(self):
         self.is_attacking = True
@@ -169,7 +195,7 @@ class Player(PhysicsEntity):
         self.velocity[1] = 20
         
 
-    def _bounce_by_reflection(self, restitution=0.6, friction=0.1):
+    def _bounce_by_reflection(self, restitution=0.8, friction=0.5):
         """
         restitution(탄성계수): 0(완전 비탄성)~1(완전 탄성)
         friction(마찰): 접선 성분 감쇠율
