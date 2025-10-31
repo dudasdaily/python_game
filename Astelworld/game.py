@@ -29,6 +29,7 @@ class Game:
             'player/charging' : Animation(load_images('entities/player/charging', (226, 138, 172))),
             'player/run' : Animation(load_images('entities/player/run', (226, 138, 172))),
             'player/fall' : Animation(load_images('entities/player/fall', (226, 138, 172))),
+            'slime/idle' : Animation(load_images('entities/slime/idle'), img_dur=12),
             'enemy/idle' : Animation(load_images('entities/enemy/idle'), img_dur=6),
             'enemy/run' : Animation(load_images('entities/enemy/run'), img_dur=6),
             'particle/leaf' : Animation(load_images('particles/leaf'), img_dur=20, loop=False),
@@ -54,11 +55,11 @@ class Game:
         # 적 스포너
         self.enemies = []
         for spawner in self.tilemap.extract([('spawners', 0), ('spawners', 1)], keep=False):
-            # print(spawner)
+            print(spawner)
             if spawner['variant'] == 0:
                 self.player.pos = spawner['pos']
             else:
-                self.enemies.append(Enemy(self, spawner['pos'], (8, 15)))
+                self.enemies.append(Enemy(self, spawner['pos'], (20, 15)))
 
         self.projectiles = []
         self.particles = []

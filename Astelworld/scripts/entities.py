@@ -21,7 +21,7 @@ class PhysicsEntity:
         self.frame_move = Vector2()
 
         self.action = ''
-        self.anim_offset = (0, -5) # 이미지 패딩 처리
+        self.anim_offset = (0, 0) # 이미지 패딩 처리
         self.flip = False
         self.is_fly = False
         self.set_action('idle')
@@ -93,7 +93,8 @@ class PhysicsEntity:
 
 class Enemy(PhysicsEntity):
     def __init__(self, game, pos, size):
-        super().__init__(game, 'enemy', pos, size)
+        super().__init__(game, 'slime', pos, size)
+        self.anim_offset = (0, 0)
         self.walking = 0 # 적이 걷는 시간의 타이머, 0이되면 멈춘다
 
     def update(self, tilemap, movement=(0, 0, 0, 0)):
@@ -124,10 +125,10 @@ class Enemy(PhysicsEntity):
             self.walking = random.randint(30, 120)
         super().update(tilemap, movement=movement)
         # 적 애니메이션 설정
-        if movement[0] != 0 or movement[1] != 0:
-            self.set_action('run')
-        else:
-            self.set_action('idle')
+        # if movement[0] != 0 or movement[1] != 0:
+        #     self.set_action('run')
+        # else:
+        #     self.set_action('idle')
 
         if self.game.player.is_fly:
             if self.rect().colliderect(self.game.player.rect()):
@@ -154,6 +155,7 @@ class Enemy(PhysicsEntity):
 class Player(PhysicsEntity):
     def __init__(self, game, pos, size):
         super().__init__(game, 'player', pos, size)
+        self.anim_offset = (0, -5)
         self.air_time = 0
         self.jump_cnt = 1
         self.is_charging = False
