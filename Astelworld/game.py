@@ -13,6 +13,7 @@ class Game:
         pygame.init()
         self.clock = pygame.time.Clock()
         self.screen = pygame.display.set_mode((640, 480))
+        # self.screen = pygame.display.set_mode((320, 240))
         self.display = pygame.Surface((320, 240))
         self.assets = {
             'snow' : load_images('tiles/snow'),
@@ -26,7 +27,10 @@ class Game:
             'player/jump' : Animation(load_images('entities/player/jump', (226, 138, 172))),
             'player/charging' : Animation(load_images('entities/player/charging', (226, 138, 172))),
             'player/run' : Animation(load_images('entities/player/run', (226, 138, 172))),
+            'player/fall' : Animation(load_images('entities/player/fall', (226, 138, 172))),
             'particle/leaf' : Animation(load_images('particles/leaf'), img_dur=20, loop=False),
+            'particle/particle' : Animation(load_images('particles/particle'), img_dur=5, loop=False),
+            'particle/burst' : Animation(load_images('particles/particle'), img_dur=20, loop=False),
         }
         self.player = Player(self, (50, 50), (28, 27))
         self.movement = [0, 0, 0, 0]
@@ -66,22 +70,24 @@ class Game:
                         if not self.player.is_charging:
                             self.movement[0] = 1
                         else:
-                            self.player.direction = [1, 0, 0, 0]
+                            self.player.last_movement = [1, 0, 0, 0]
 
                     if event.key == pygame.K_RIGHT and not self.player.is_fly:
                         if not self.player.is_charging:
                             self.movement[1] = 1
                         else:
-                            self.player.direction = [0, 1, 0, 0]
+                            self.player.last_movement = [0, 1, 0, 0]
                     
                     if event.key == pygame.K_SPACE:
                         self.player.charge = pygame.time.get_ticks()
-                        self.player.jump_cnt += 1
 
-                        if self.player.jump_cnt < 2:
+                        if self.player.jump_cnt:
                             self.player.is_charging = True
-                            self.player.direction = self.movement.copy()
+                            self.player.jump_cnt -= 1
                             self.movement = [0, 0, 0, 0]
+
+                        if self.player.is_fly and self.player.factor != 0:
+                            self.player.jump_attak()
                         
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT:
@@ -89,21 +95,8 @@ class Game:
                     if event.key == pygame.K_RIGHT:
                         self.movement[1] = 0
                     if event.key == pygame.K_SPACE:
-                        if self.player.jump_cnt < 2:
-                            self.player.charge = pygame.time.get_ticks() - self.player.charge
-                            self.player.is_fly = True
-                            self.player.is_charging = False
-
-                            factor = 0
-                            if 0 <= self.player.charge < 500:
-                                factor = 1.25
-                            if 500 <= self.player.charge < 1000:
-                                factor = 2
-                            if self.player.charge >= 1000:
-                                factor = 3
-
-                            self.player.velocity[0] = factor
-                            self.player.velocity[1] = -1.5 * factor
+                        self.player.charge = pygame.time.get_ticks() - self.player.charge
+                        self.player.jump()
 
             self.player.update(self.tilemap, self.movement)
             self.tilemap.render(self.display, render_scroll)
@@ -122,7 +115,6 @@ class Game:
             # self.rectangle.x -= render_scroll[0]
             # self.rectangle.y -= render_scroll[1]
             # pygame.draw.rect(self.display, (0, 0, 0), self.rectangle, 2)
-
 
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
             pygame.display.update()
