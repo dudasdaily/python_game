@@ -238,7 +238,7 @@ class Player(PhysicsEntity):
             # self.velocity[0] = self.factor
             # self.velocity[1] = -1.5 * self.factor
 
-    def jump_attak(self):
+    def jump_attack(self):
         self.is_attacking = True
         self.last_movement = [0, 0, 0, 0]
         self.velocity[1] = 20
