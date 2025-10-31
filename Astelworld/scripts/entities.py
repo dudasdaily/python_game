@@ -5,6 +5,7 @@ import math
 import random
 from pygame.math import Vector2
 from scripts.particle import Particle 
+from scripts.spark import Spark
 
 class PhysicsEntity:
     def __init__(self, game, e_type, pos, size):
@@ -55,7 +56,7 @@ class PhysicsEntity:
             if entity_rect.colliderect(rect):
                 if frame_movement[0] > 0: # 엔티티가 오른쪽으로 가다가 충돌
                     entity_rect.right = rect.left
-                    self.collisions['right'] = False
+                    self.collisions['right'] = True
                     normal_sum += Vector2(-1, 0)
                 if frame_movement[0] < 0: # 엔티티가 왼쪽으로 가다가 충돌
                     entity_rect.left = rect.right
@@ -95,14 +96,60 @@ class Enemy(PhysicsEntity):
         super().__init__(game, 'enemy', pos, size)
         self.walking = 0 # 적이 걷는 시간의 타이머, 0이되면 멈춘다
 
-    def update(self, tilemap, movement=(0, 0)):
+    def update(self, tilemap, movement=(0, 0, 0, 0)):
+        # 적이 걷고 있을 때
         if self.walking:
-            movement = (movement[0] - 0.5 if self.flip else 0.5, movement[1])
-            self.walking = max(0, self.walking - 1)
-        elif random.random() < 0.01: # 적이 안걷고 있으면, 60fps에서 평균적으로 100프레임당 한번 씩(약 1.67초) 적이 걸을 타이머를 랜덤(30 ~ 119)로 세팅한다!==> 
-            self.walking = random.randint(30, 120)
+            if tilemap.solid_check((self.rect().centerx + (-7 if self.flip else 7), self.pos[1] + 23 )):
+                if self.collisions['left'] or self.collisions['right']:
+                    self.flip = not self.flip 
+                else:
+                    movement = [0.5, 0, 0, 0] if self.flip else [0, 0.5, 0, 0]
+            else:
+                self.flip = not self.flip 
+            self.walking = max(0, self.walking - 1) # 여기서 업데이트하기 때문에 바로 밑에서 멈춘 순간 프레임을 포착할 수 있음
+            if not self.walking:
+                dis = (self.game.player.pos[0] - self.pos[0], self.game.player.pos[1] - self.pos[1])
+                if (abs(dis[1]) < 16):
+                    if (self.flip and dis[0] < 0):
+                        self.game.projectiles.append([[self.rect().centerx - 7, self.rect().centery], -1.5, 0])
+                        for i in range(4):
+                            self.game.sparks.append(Spark(self.game.projectiles[-1][0], random.random() - 0.5 + math.pi, 2 + random.random()))
+                    if (not self.flip and dis[0] > 0):
+                        self.game.projectiles.append([[self.rect().centerx + 7, self.rect().centery], 1.5, 0])
+                        for i in range(4):
+                            self.game.sparks.append(Spark(self.game.projectiles[-1][0], random.random() - 0.5, 2 + random.random()))
 
+        # 적이 안걷고 있을 때
+        elif random.random() < 0.01: # 적이 안걷고 있으면, 60fps에서 평균적으로 100프레임당 한번 씩(약 1.67초) 적이 걸을 타이머를 랜덤(30 ~ 119)로 세팅한다!
+            self.walking = random.randint(30, 120)
         super().update(tilemap, movement=movement)
+        # 적 애니메이션 설정
+        if movement[0] != 0 or movement[1] != 0:
+            self.set_action('run')
+        else:
+            self.set_action('idle')
+
+        if self.game.player.is_fly:
+            if self.rect().colliderect(self.game.player.rect()):
+                for i in range(30):
+                    angle = random.random() * math.pi * 2
+                    speed = random.random() * 5
+                    self.game.sparks.append(Spark(self.rect().center, angle, 2 + random.random()))
+                    self.game.particles.append(Particle(self.game, 'particle', self.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
+
+                self.game.sparks.append(Spark(self.rect().center, 0, 5 + random.random()))
+                self.game.sparks.append(Spark(self.rect().center, math.pi, 5 + random.random()))
+                return True # kill = True를 반환!
+             
+        
+
+    def render(self, surf, offset=(0, 0)):
+        super().render(surf, offset=offset)
+
+        if self.flip:
+            surf.blit(pygame.transform.flip(self.game.assets['gun'], True, False), (self.rect().centerx - self.game.assets['gun'].get_width() - offset[0], self.rect().centery - offset[1]))
+        else:
+            surf.blit(self.game.assets['gun'], (self.rect().centerx + 4 - offset[0], self.rect().centery - offset[1]))
 
 class Player(PhysicsEntity):
     def __init__(self, game, pos, size):

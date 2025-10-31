@@ -98,6 +98,12 @@ class Tilemap:
         self.tile_size = map_data['tile_size']
         self.off_grid_tiles = map_data['offgrid']
 
+    def solid_check(self, pos):
+        tile_loc = f"{int(pos[0]//self.tile_size)};{int(pos[1]//self.tile_size)}"
+        if tile_loc in self.tile_map:
+            if self.tile_map[tile_loc]['type'] in PHYSICS_TILES:
+                return self.tile_map[tile_loc]
+
     # id_pair : (type, variant)
     # id_pairs : [id_pair, ...]
     def extract(self, id_pairs, keep=False):
