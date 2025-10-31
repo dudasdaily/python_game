@@ -130,20 +130,6 @@ class Enemy(PhysicsEntity):
         # else:
         #     self.set_action('idle')
 
-        if self.game.player.is_fly:
-            if self.rect().colliderect(self.game.player.rect()):
-                for i in range(30):
-                    angle = random.random() * math.pi * 2
-                    speed = random.random() * 5
-                    self.game.sparks.append(Spark(self.rect().center, angle, 2 + random.random()))
-                    self.game.particles.append(Particle(self.game, 'particle', self.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
-
-                self.game.sparks.append(Spark(self.rect().center, 0, 5 + random.random()))
-                self.game.sparks.append(Spark(self.rect().center, math.pi, 5 + random.random()))
-                return True # kill = True를 반환!
-             
-        
-
     def render(self, surf, offset=(0, 0)):
         super().render(surf, offset=offset)
 
@@ -163,12 +149,27 @@ class Player(PhysicsEntity):
         self.factor = 0
         self.is_attacking = False
 
+        self.hurt_cooldown = 0 # 짧은 연속 판정 방지
+        self.knockback_timer = 0 # 넉백 유지 시간 선택
+        self.knockback_immunity = 0 # 넉백 무적 프레임 (180 프레임)
+
     def update(self, tilemap, movement=(0,0,0,0)):
         if self.factor != 0:
             movement = self.last_movement
 
         if self.is_fly:
             self.air_time += 1
+
+        if self.hurt_cooldown > 0:
+            self.hurt_cooldown -= 1
+        
+        if self.knockback_immunity > 0:
+            self.knockback_immunity -= 1
+
+        if self.knockback_timer > 0:
+            movement = self.last_movement
+            self.knockback_timer -= 1
+            
         super().update(tilemap, movement = movement)
 
         if (self.is_attacking):
@@ -242,8 +243,44 @@ class Player(PhysicsEntity):
         self.is_attacking = True
         self.last_movement = [0, 0, 0, 0]
         self.velocity[1] = 20
-        
 
+    def enemy_collision_vertical(self, game, player, enemy):
+        if player.is_attacking:
+            self.game.kill_enemy(enemy)
+        else:
+            # 적의 히트박스 상단 중앙을 기준으로 법선 벡터 계산 (위쪽 방향)
+            enemy_rect = enemy.rect()
+            normal = Vector2(0, -1)  # 적의 상단 면의 법선 벡터 (위로 향함)
+            
+            # 플레이어의 입사 벡터 (충돌 직전 이동 벡터)
+            v_in = Vector2(player.frame_move.x, player.frame_move.y)
+            
+            # 입사 벡터를 법선 성분과 접선 성분으로 분해
+            v_n = normal * v_in.dot(normal)  # 법선 성분
+            v_t = v_in - v_n                 # 접선 성분
+            
+            # 반사: 법선 성분만 반대로, 접선 성분은 유지
+            restitution = 0.8  # 탄성 계수
+            v_out = (-restitution) * v_n + v_t
+            
+            # 플레이어 위치를 적의 상단 위로 조정
+            player.pos[1] = enemy_rect.top - player.size[1]
+            
+            # 반사된 벡터를 플레이어 속도에 적용
+            if abs(v_out.x) < 0.05:
+                player.last_movement = [0, 0, 0, 0]
+                player.velocity[0] = 1.5
+            else:
+                if v_out.x < 0:
+                    player.last_movement = [1, 0, 0, 0]  # 왼쪽
+                else:
+                    player.last_movement = [0, 1, 0, 0]  # 오른쪽
+                player.velocity[0] = max(1.5, abs(v_out.x))
+            
+            # 수직 속도 설정 (위로 튕겨나가므로 음수)
+            player.velocity[1] = max(-5, min(5, v_out.y))
+            self.game.kill_enemy(enemy)
+            
     def _bounce_by_reflection(self, restitution=0.8, friction=0.5):
         """
         restitution(탄성계수): 0(완전 비탄성)~1(완전 탄성)
@@ -275,6 +312,90 @@ class Player(PhysicsEntity):
         # 2) 수직 속도
         # 이 엔진은 +y가 아래이므로 v_out.y가 음수면 위로 튕김
         self.velocity[1] = max(-5, min(5, v_out.y))
+
+    def _apply_knockback(self, dir_vec: Vector2, enemy_rect, hop_y: float = 0.0, push_out: bool = True):
+        """
+        dir_vec: 플레이어가 '밀려날' 방향의 단위벡터(예: 좌(-1,0), 우(1,0), 하(0,1))
+        hop_y : 수직 넉백(아래로 +, 위로 -). 지상 옆치기라도 살짝 튕기는 느낌을 줄 수 있음(원하면 0으로).
+        push_out: 겹침 해소를 위해 즉시 위치를 뽑아내기
+        """
+        if dir_vec.length_squared() == 0:
+            return
+
+        d = dir_vec.normalize()
+        # 진행 방향의 반대로 '밀려남' = d 방향 속도 부여
+        # 수평
+        if abs(d.x) > 0.1:
+            # last_movement는 방향키 유지처럼 쓰이므로, x의 부호에 맞춰 설정
+            if d.x > 0:
+                self.last_movement = [0, 1, 0, 0]   # 오른쪽으로 밀려남
+            else:
+                self.last_movement = [1, 0, 0, 0]   # 왼쪽으로 밀려남
+            self.velocity[0] = max(3.5, self.velocity[0])  # 넉백 세기
+
+            if push_out:
+                if d.x > 0:  # 오른쪽으로 빼내기
+                    self.pos[0] = enemy_rect.right + 1
+                else:         # 왼쪽으로 빼내기
+                    self.pos[0] = enemy_rect.left - self.size[0] - 1
+
+        # 수직
+        if abs(d.y) > 0.1:
+            # 아래로 밀어내는 경우(+): 땅에 붙어 있어도 확실히 밀려남
+            self.velocity[1] = max(self.velocity[1], 3.5) if d.y > 0 else min(self.velocity[1], -3.5)
+            if push_out:
+                if d.y > 0:  # 아래로 빼내기(적의 아랫면과 충돌했을 때)
+                    self.pos[1] = enemy_rect.bottom + 1
+                else:        # 위로 빼내기(필요시)
+                    self.pos[1] = enemy_rect.top - self.size[1] - 1
+
+        # 살짝 점프 느낌(옵션)
+        if hop_y != 0.0:
+            self.velocity[1] = hop_y
+
+        # 한두 프레임 공중 판정으로 만들어 넉백이 확실히 먹도록
+        self.is_fly = True
+        # 연속 판정 방지
+        self.hurt_cooldown = 15  # 0.25초(60fps 기준)
+
+        if getattr(self, 'factor', 0) <= 0:
+            self.factor = 1
+
+        self.knockback_immunity = 180
+
+    def enemy_collision_side(self, enemy):
+        """좌/우 측면 충돌: 진행 반대로 수평 넉백(지상에서도 강제)."""
+        if self.knockback_immunity > 0:
+            return
+        if self.hurt_cooldown:
+            return
+        v = Vector2(self.frame_move.x, self.frame_move.y)
+
+        # '진행 방향'이 거의 없다면, 적의 위치 기준으로 반대쪽으로 밀기
+        if v.length() < 0.1:
+            dir_x = -1 if enemy.rect().centerx > self.rect().centerx else 1
+        else:
+            # 진행 방향의 '반대'로 밀려남 => v의 반대 방향이지만, 좌/우 충돌이므로 수평 성분만 사용
+            dir_x = -1 if v.x > 0 else (1 if v.x < 0 else (-1 if enemy.rect().centerx > self.rect().centerx else 1))
+
+        self._apply_knockback(Vector2(dir_x, 0), enemy.rect(), hop_y=-1.2)  # 살짝 위로 톡 튀는 느낌
+
+    def enemy_collision_below(self, enemy):
+        """아래(플레이어가 적의 아랫면에 부딪힘): 진행 반대로 + 수직으로 아래로 밀어내기."""
+        if self.knockback_immunity > 0:
+            return
+        if self.hurt_cooldown:
+            return
+        v = Vector2(self.frame_move.x, self.frame_move.y)
+
+        # 기본은 '아래로' 밀치기(충돌면 법선의 반대 = 진행 반대가 보통 위쪽이므로)
+        knock_dir = Vector2(0, 1)
+
+        # 수평 성분도 '진행 반대'로 섞어주면 더 자연스러움(선택)
+        if abs(v.x) > 0.05:
+            knock_dir.x = -1 if v.x > 0 else 1
+
+        self._apply_knockback(knock_dir, enemy.rect(), hop_y=0.0)
 
     def render(self, surf, offset=(0, 0)):
         if not self.is_attacking:

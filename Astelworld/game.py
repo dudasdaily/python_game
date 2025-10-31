@@ -55,7 +55,6 @@ class Game:
         # 적 스포너
         self.enemies = []
         for spawner in self.tilemap.extract([('spawners', 0), ('spawners', 1)], keep=False):
-            print(spawner)
             if spawner['variant'] == 0:
                 self.player.pos = spawner['pos']
             else:
@@ -66,6 +65,18 @@ class Game:
         self.sparks = []
 
         self.scroll = [0, 0] # 카메라 위치(position)
+
+    def kill_enemy(self, enemy):
+        """적을 죽이고 파티클 생성"""
+        for i in range(30):
+            angle = random.random() * math.pi * 2
+            speed = random.random() * 5
+            self.sparks.append(Spark(enemy.rect().center, angle, 2 + random.random()))
+            self.particles.append(Particle(self, 'particle', enemy.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
+        
+        self.sparks.append(Spark(enemy.rect().center, 0, 5 + random.random()))
+        self.sparks.append(Spark(enemy.rect().center, math.pi, 5 + random.random()))
+        self.enemies.remove(enemy)
 
     def run(self):
         while True:
@@ -111,7 +122,7 @@ class Game:
                             self.movement = [0, 0, 0, 0]
 
                         if self.player.is_fly and self.player.factor != 0:
-                            self.player.jump_attak()
+                            self.player.jump_attack()
                         
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT:
@@ -127,6 +138,11 @@ class Game:
             for enemy in self.enemies.copy():
                 kill = enemy.update(self.tilemap, (0, 0))
                 enemy.render(self.display, offset=render_scroll)
+                # 히트박스 표시
+                self.rectangle = enemy.rect()
+                self.rectangle.x -= render_scroll[0]
+                self.rectangle.y -= render_scroll[1]
+                pygame.draw.rect(self.display, (0, 0, 0), self.rectangle, 2)
 
                 if kill:
                     self.enemies.remove(enemy)
@@ -134,6 +150,23 @@ class Game:
             self.player.update(self.tilemap, self.movement)
             self.player.render(self.display, render_scroll)
             
+            # 플레이어와 적 충돌 감지
+            for enemy in self.enemies:
+                if self.player.rect().colliderect(enemy.rect()):
+                    pr = self.player.rect()
+                    er = enemy.rect()
+
+                    # 1) 스톰프(플레이어가 적의 위를 밟는 경우)
+                    if pr.bottom <= er.top + 3 and self.player.velocity[1] > 0:
+                        self.player.enemy_collision_vertical(self, self.player, enemy)
+
+                    # 2) 아래(플레이어가 적의 아랫면에 부딪힌 경우: 위로 올라가던 중이고 수평으로 겹치는 상태)
+                    elif pr.top <= er.bottom and self.player.velocity[1] < 0 and (pr.centerx >= er.left and pr.centerx <= er.right):
+                        self.player.enemy_collision_below(enemy)
+
+                    # 3) 그 외는 좌/우 측면 충돌로 간주
+                    else:
+                        self.player.enemy_collision_side(enemy)
             # 총알
             # [[x, y], direction, timer]
             for projectile in self.projectiles.copy():
