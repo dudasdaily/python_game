@@ -13,7 +13,8 @@ class Game:
     def __init__(self):
         pygame.init()
         self.clock = pygame.time.Clock()
-        self.screen = pygame.display.set_mode((640, 480))
+        # self.screen = pygame.display.set_mode((640, 480))
+        self.screen = pygame.display.set_mode((1280, 960))
         # self.screen = pygame.display.set_mode((320, 240))
         self.display = pygame.Surface((320, 240))
         self.assets = {
@@ -138,7 +139,7 @@ class Game:
             for enemy in self.enemies.copy():
                 kill = enemy.update(self.tilemap, (0, 0))
                 enemy.render(self.display, offset=render_scroll)
-                # 히트박스 표시
+                # 적 히트박스 표시
                 self.rectangle = enemy.rect()
                 self.rectangle.x -= render_scroll[0]
                 self.rectangle.y -= render_scroll[1]
@@ -157,7 +158,8 @@ class Game:
                     er = enemy.rect()
 
                     # 1) 스톰프(플레이어가 적의 위를 밟는 경우)
-                    if pr.bottom <= er.top + 3 and self.player.velocity[1] > 0:
+                    if pr.bottom <= er.top + 15 and self.player.velocity[1] > 0:
+                        print(f"스톰프 : {pr.bottom}, {er.top}, {self.player.velocity[1]}")
                         self.player.enemy_collision_vertical(self, self.player, enemy)
 
                     # 2) 아래(플레이어가 적의 아랫면에 부딪힌 경우: 위로 올라가던 중이고 수평으로 겹치는 상태)
@@ -166,6 +168,7 @@ class Game:
 
                     # 3) 그 외는 좌/우 측면 충돌로 간주
                     else:
+                        print(f"넉백 : {pr.bottom}, {er.top}, {self.player.velocity[1]}")
                         self.player.enemy_collision_side(enemy)
             # 총알
             # [[x, y], direction, timer]

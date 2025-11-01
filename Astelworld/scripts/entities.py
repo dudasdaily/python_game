@@ -331,7 +331,7 @@ class Player(PhysicsEntity):
                 self.last_movement = [0, 1, 0, 0]   # 오른쪽으로 밀려남
             else:
                 self.last_movement = [1, 0, 0, 0]   # 왼쪽으로 밀려남
-            self.velocity[0] = max(3.5, self.velocity[0])  # 넉백 세기
+            self.velocity[0] = max(2.5, self.velocity[0])  # 넉백 세기
 
             if push_out:
                 if d.x > 0:  # 오른쪽으로 빼내기
@@ -369,6 +369,8 @@ class Player(PhysicsEntity):
             return
         if self.hurt_cooldown:
             return
+        if self.is_attacking:
+            return
         v = Vector2(self.frame_move.x, self.frame_move.y)
 
         # '진행 방향'이 거의 없다면, 적의 위치 기준으로 반대쪽으로 밀기
@@ -400,5 +402,3 @@ class Player(PhysicsEntity):
     def render(self, surf, offset=(0, 0)):
         if not self.is_attacking:
             super().render(surf, offset=offset)
-
-        
