@@ -140,10 +140,10 @@ class Game:
                 kill = enemy.update(self.tilemap, (0, 0))
                 enemy.render(self.display, offset=render_scroll)
                 # 적 히트박스 표시
-                self.rectangle = enemy.rect()
-                self.rectangle.x -= render_scroll[0]
-                self.rectangle.y -= render_scroll[1]
-                pygame.draw.rect(self.display, (0, 0, 0), self.rectangle, 2)
+                # self.rectangle = enemy.rect()
+                # self.rectangle.x -= render_scroll[0]
+                # self.rectangle.y -= render_scroll[1]
+                # pygame.draw.rect(self.display, (0, 0, 0), self.rectangle, 2)
 
                 if kill:
                     self.enemies.remove(enemy)
@@ -158,7 +158,7 @@ class Game:
                     er = enemy.rect()
 
                     # 1) 스톰프(플레이어가 적의 위를 밟는 경우)
-                    if pr.bottom <= er.top + 15 and self.player.velocity[1] > 0:
+                    if pr.bottom <= er.top + 5 and self.player.velocity[1] > 1.5:
                         print(f"스톰프 : {pr.bottom}, {er.top}, {self.player.velocity[1]}")
                         self.player.enemy_collision_vertical(self, self.player, enemy)
 
