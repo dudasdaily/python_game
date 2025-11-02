@@ -13,9 +13,9 @@ class Game:
     def __init__(self):
         pygame.init()
         self.clock = pygame.time.Clock()
-        # self.screen = pygame.display.set_mode((640, 480))
-        self.screen = pygame.display.set_mode((1280, 960))
-        # self.screen = pygame.display.set_mode((320, 240))
+        self.screen = pygame.display.set_mode((640, 480))
+        # self.screen = pygame.display.set_mode((1280, 960))
+        # self.screen = pygame.display.set_mode((320, 240))5
         self.display = pygame.Surface((320, 240))
         self.assets = {
             'snow' : load_images('tiles/snow'),
@@ -42,7 +42,9 @@ class Game:
         self.player = Player(self, (50, 50), (28, 27))
         self.movement = [0, 0, 0, 0]
         self.tilemap = Tilemap(self, tile_size = 16)
-        self.load_level(0)
+        self.level = 0
+        self.load_level(self.level)
+        self.screenshake = 0
 
         
 
@@ -66,6 +68,9 @@ class Game:
         self.sparks = []
 
         self.scroll = [0, 0] # 카메라 위치(position)
+        self.dead = 0
+        self.player.air_time = 0
+        self.transition = -30
 
     def kill_enemy(self, enemy):
         """적을 죽이고 파티클 생성"""
@@ -85,11 +90,25 @@ class Game:
             # self.display.blit(self.assets['background'], (0, 0))
             self.display.fill((0,0,0))
 
+            self.display.blit(self.assets['background'], (0, 0))
+            self.screenshake = max(0, self.screenshake - 1)
+
+            if not len(self.enemies): # 적이 없으면 다음 레벨(맵)로 변경한다!
+                self.transition += 1
+                if self.transition > 30:
+                    self.level += 1
+                    self.load_level(self.level)
+            if self.transition < 0: # 연출
+                    self.transition += 1
+
+            if self.dead:
+                self.dead += 1
+                if self.dead > 40:
+                    self.load_level(self.level)
+
             self.scroll[0] += (self.player.rect().centerx - self.display.get_width() / 2 - self.scroll[0]) / 25
             self.scroll[1] += (self.player.rect().centery - self.display.get_height() / 2 - self.scroll[1]) / 25
-            render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
-
-            self.display.blit(self.assets['background'], (0, 0))
+            render_scroll = (int(self.scroll[0]), int(self.scroll[1]))            
 
             for rect in self.leaf_spawners:
                 if random.random() * 49999 < rect.width * rect.height:
@@ -102,6 +121,9 @@ class Game:
                     sys.exit()
 
                 if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.ingame_menu()
+
                     if event.key == pygame.K_LEFT and not self.player.is_fly:
                         if not self.player.is_charging:
                             self.movement[0] = 1
@@ -122,9 +144,12 @@ class Game:
                             self.player.jump_cnt -= 1
                             self.movement = [0, 0, 0, 0]
 
-                        if self.player.is_fly and self.player.factor != 0:
+                        # elif self.player.is_fly and self.player.factor != 0:
+                        #     self.player.jump_attack()
+
+                        elif self.player.is_fly:
                             self.player.jump_attack()
-                        
+
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT:
                         self.movement[0] = 0
@@ -147,9 +172,9 @@ class Game:
 
                 if kill:
                     self.enemies.remove(enemy)
-
-            self.player.update(self.tilemap, self.movement)
-            self.player.render(self.display, render_scroll)
+            if not self.dead:
+                self.player.update(self.tilemap, self.movement)
+                self.player.render(self.display, render_scroll)
             
             # 플레이어와 적 충돌 감지
             for enemy in self.enemies:
@@ -159,7 +184,7 @@ class Game:
 
                     # 1) 스톰프(플레이어가 적의 위를 밟는 경우)
                     if pr.bottom <= er.top + 5 and self.player.velocity[1] > 1.5:
-                        print(f"스톰프 : {pr.bottom}, {er.top}, {self.player.velocity[1]}")
+                        self.screenshake = max(16, self.screenshake)
                         self.player.enemy_collision_vertical(self, self.player, enemy)
 
                     # 2) 아래(플레이어가 적의 아랫면에 부딪힌 경우: 위로 올라가던 중이고 수평으로 겹치는 상태)
@@ -168,7 +193,8 @@ class Game:
 
                     # 3) 그 외는 좌/우 측면 충돌로 간주
                     else:
-                        print(f"넉백 : {pr.bottom}, {er.top}, {self.player.velocity[1]}")
+                        if not self.player.knockback_immunity:
+                            self.screenshake = max(16, self.screenshake)
                         self.player.enemy_collision_side(enemy)
             # 총알
             # [[x, y], direction, timer]
@@ -186,8 +212,10 @@ class Game:
                 elif projectile[2] > 360:
                     self.projectiles.remove(projectile)
                 elif not self.player.is_attacking: # 점프 공격중에는 총알 안맞음
-                    if self.player.rect().collidepoint(projectile[0]): # 플레이어가 총알에 맞았다면
+                    if self.player.rect().collidepoint(projectile[0]) and not self.player.knockback_immunity: # 플레이어가 총알에 맞았다면
                         self.projectiles.remove(projectile)
+                        self.dead += 1
+                        self.screenshake = max(16, self.screenshake)
                         for i in range(30):
                             angle = random.random() * math.pi * 2
                             speed = random.random() * 5
@@ -215,7 +243,40 @@ class Game:
             # self.rectangle.y -= render_scroll[1]
             # pygame.draw.rect(self.display, (0, 0, 0), self.rectangle, 2)
 
-            self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
+            if self.transition:
+                transition_surf = pygame.Surface(self.display.get_size())
+                pygame.draw.circle(transition_surf, (255, 255, 255), (self.display.get_width() // 2, self.display.get_height()), (30 - abs(self.transition)) * 8)
+                transition_surf.set_colorkey((255, 255, 255))
+                self.display.blit(transition_surf, (0, 0))
+
+            screenshake_offset = (random.random() * self.screenshake - self.screenshake / 2, random.random() * self.screenshake - self.screenshake / 2)
+            self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), screenshake_offset)
+            pygame.display.update()
+
+    def ingame_menu(self):
+        running = True
+
+        base_screen = self.screen.copy()
+
+        while running:
+            # self.display.fill((0, 0, 0))
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        running = False
+
+            self.clock.tick(60)
+            self.screen.blit(base_screen, (0, 0))
+
+            # overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
+            # overlay.fill((0, 0, 0, 140))
+            # self.screen.blit(overlay, (0, 0))
+
+            menu_rect = pygame.Rect(120, 90, 400, 300)
+
+            pygame.draw.rect(self.screen, (240, 240, 240), menu_rect, border_radius=12)
+            # pygame.draw.rect(self.screen, (30, 30, 30), menu_rect, 3, border_radius=12)
+
             pygame.display.update()
 
 Game().run()

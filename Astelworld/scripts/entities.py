@@ -172,6 +172,12 @@ class Player(PhysicsEntity):
             
         super().update(tilemap, movement = movement)
 
+        if self.air_time > 360:
+            if not self.game.dead:
+                self.game.screenshake = max(16, self.game.screenshake)
+            self.game.dead += 1
+
+
         if (self.is_attacking):
             pvelocity = [0, random.random() * 3]
             self.game.particles.append(Particle(self.game, 'particle', self.rect().center, velocity=pvelocity, frame=2))
@@ -199,8 +205,7 @@ class Player(PhysicsEntity):
                         self.game.particles.append(Particle(self.game, 'burst', self.rect().center, velocity=pvelocity, frame=random.randint(0, 4)))
                     self.is_attacking = False
 
-
-            self.velocity[1] = 1.5 
+            self.velocity[1] = 1.5
 
         if self.is_charging:
             self.set_action('charging')
@@ -260,7 +265,7 @@ class Player(PhysicsEntity):
             v_t = v_in - v_n                 # 접선 성분
             
             # 반사: 법선 성분만 반대로, 접선 성분은 유지
-            restitution = 0.8  # 탄성 계수
+            restitution = 0.6  # 탄성 계수
             v_out = (-restitution) * v_n + v_t
             
             # 플레이어 위치를 적의 상단 위로 조정
@@ -380,7 +385,7 @@ class Player(PhysicsEntity):
             # 진행 방향의 '반대'로 밀려남 => v의 반대 방향이지만, 좌/우 충돌이므로 수평 성분만 사용
             dir_x = -1 if v.x > 0 else (1 if v.x < 0 else (-1 if enemy.rect().centerx > self.rect().centerx else 1))
 
-        self._apply_knockback(Vector2(dir_x, 0), enemy.rect(), hop_y=-1.2)  # 살짝 위로 톡 튀는 느낌
+        self._apply_knockback(Vector2(dir_x, 0), enemy.rect(), hop_y=-1.04)  # 살짝 위로 톡 튀는 느낌
 
     def enemy_collision_below(self, enemy):
         """아래(플레이어가 적의 아랫면에 부딪힘): 진행 반대로 + 수직으로 아래로 밀어내기."""
