@@ -13,8 +13,8 @@ class Game:
     def __init__(self):
         pygame.init()
         self.clock = pygame.time.Clock()
-        self.screen = pygame.display.set_mode((640, 480))
-        # self.screen = pygame.display.set_mode((1280, 960))
+        # self.screen = pygame.display.set_mode((640, 480))
+        self.screen = pygame.display.set_mode((1280, 960))
         # self.screen = pygame.display.set_mode((320, 240))5
         self.display = pygame.Surface((320, 240))
         self.assets = {
@@ -25,11 +25,16 @@ class Game:
             'stone' : load_images('tiles/stone'),
             'player' : load_image('entities/player.png'),
             'background' : load_image('background.png'),
-            'player/idle' : Animation(load_images('entities/player/idle', (226, 138, 172)), img_dur=10),
-            'player/jump' : Animation(load_images('entities/player/jump', (226, 138, 172))),
-            'player/charging' : Animation(load_images('entities/player/charging', (226, 138, 172))),
-            'player/run' : Animation(load_images('entities/player/run', (226, 138, 172))),
-            'player/fall' : Animation(load_images('entities/player/fall', (226, 138, 172))),
+            # 'player/idle' : Animation(load_images('entities/player/idle', (226, 138, 172)), img_dur=10),
+            # 'player/jump' : Animation(load_images('entities/player/jump', (226, 138, 172))),
+            # 'player/run' : Animation(load_images('entities/player/run', (226, 138, 172))),
+            # 'player/charging' : Animation(load_images('entities/player/charging', (226, 138, 172))),
+            'player/landing' : Animation(load_images('entities/player/landing'), img_dur=20, loop=True),
+            'player/idle' : Animation(load_images('entities/player/idle'), img_dur=20),
+            'player/jump' : Animation(load_images('entities/player/jump')),
+            'player/run' : Animation(load_images('entities/player/run')),
+            'player/charging' : Animation(load_images('entities/player/charging')),
+            'player/fall' : Animation(load_images('entities/player/fall')),
             'slime/idle' : Animation(load_images('entities/slime/idle'), img_dur=12),
             'enemy/idle' : Animation(load_images('entities/enemy/idle'), img_dur=6),
             'enemy/run' : Animation(load_images('entities/enemy/run'), img_dur=6),
@@ -106,20 +111,24 @@ class Game:
                 if self.dead > 40:
                     self.load_level(self.level)
 
+            # 카메라 고정
             self.scroll[0] += (self.player.rect().centerx - self.display.get_width() / 2 - self.scroll[0]) / 25
             self.scroll[1] += (self.player.rect().centery - self.display.get_height() / 2 - self.scroll[1]) / 25
             render_scroll = (int(self.scroll[0]), int(self.scroll[1]))            
 
+            # 나무 잎 파티클
             for rect in self.leaf_spawners:
                 if random.random() * 49999 < rect.width * rect.height:
                     pos = (rect.x + random.random() * rect.width, rect.y + random.random() * rect.height)
                     self.particles.append(Particle(self, 'leaf', pos, [0.1, 0.3], frame=random.randint(0, 20)))
 
+            # 유저 입력
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
 
+                # 키 다운
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.ingame_menu()
@@ -150,6 +159,7 @@ class Game:
                         elif self.player.is_fly:
                             self.player.jump_attack()
 
+                # 키 업
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT:
                         self.movement[0] = 0
@@ -197,7 +207,7 @@ class Game:
                             self.screenshake = max(16, self.screenshake)
                         self.player.enemy_collision_side(enemy)
             # 총알
-            # [[x, y], direction, timer]
+            # projectile[] = [[x, y], direction, timer]
             for projectile in self.projectiles.copy():
                 projectile[0][0] += projectile[1] # [x, y]의 x에 더한다는 것
                 projectile[2] += 1 # timer += 1

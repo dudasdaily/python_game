@@ -148,6 +148,7 @@ class Player(PhysicsEntity):
         self.charge = 0
         self.factor = 0
         self.is_attacking = False
+        self.landing_time = 0
 
         self.hurt_cooldown = 0 # 짧은 연속 판정 방지
         self.knockback_timer = 0 # 넉백 유지 시간 선택
@@ -156,6 +157,9 @@ class Player(PhysicsEntity):
     def update(self, tilemap, movement=(0,0,0,0)):
         if self.factor != 0:
             movement = self.last_movement
+
+        if self.landing_time:
+            self.landing_time = max(0, self.landing_time - 1)
 
         if self.is_fly:
             self.air_time += 1
@@ -195,6 +199,7 @@ class Player(PhysicsEntity):
                 # self.game.movement = [0, 0, 0, 0]
                 self.air_time = 0
                 self.factor = 0
+                self.landing_time = 20
 
                 if self.is_attacking:
                     # 파티클 버스트
@@ -217,6 +222,8 @@ class Player(PhysicsEntity):
         elif movement[1] != 0:
             self.flip = False
             self.set_action('run')
+        elif self.landing_time:
+            self.set_action('landing')
         else:
             self.set_action('idle')
 
