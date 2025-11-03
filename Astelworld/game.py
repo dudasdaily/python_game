@@ -14,8 +14,8 @@ class Game:
     def __init__(self):
         pygame.init()
         self.clock = pygame.time.Clock()
-        # self.screen = pygame.display.set_mode((640, 480))
-        self.screen = pygame.display.set_mode((1280, 960))
+        self.screen = pygame.display.set_mode((640, 480))
+        # self.screen = pygame.display.set_mode((1280, 960))
         # self.screen = pygame.display.set_mode((320, 240))
         self.display = pygame.Surface((320, 240))
         self.assets = {
@@ -79,7 +79,6 @@ class Game:
         for spawner in self.tilemap.extract([('spawners', 0), ('spawners', 1)], keep=False):
             if spawner['variant'] == 0 and self.level != '0':
                 self.player.pos = spawner['pos']
-                print(spawner['pos'])
             else:
                 self.enemies.append(Enemy(self, spawner['pos'], (20, 15)))
 
@@ -159,6 +158,7 @@ class Game:
                 # 키 다운
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
+                        self.movement = [0, 0, 0, 0]
                         self.ingame_menu()
 
                     if event.key == pygame.K_LEFT and not self.player.is_fly:
@@ -296,7 +296,7 @@ class Game:
                     self.particles.remove(particle)
 
             # 플레이어 히트박스 표시
-            self.show_hitbox(self.player, render_scroll)
+            # self.show_hitbox(self.player, render_scroll)
 
             if self.transition:
                 transition_surf = pygame.Surface(self.display.get_size())
@@ -327,7 +327,8 @@ class Game:
             # overlay.fill((0, 0, 0, 140))
             # self.screen.blit(overlay, (0, 0))
 
-            menu_rect = pygame.Rect(120, 90, 400, 300)
+            menu_rect = pygame.Rect(0, 0, 400, 300)
+            menu_rect.center = (self.display.get_width() // 2, self.display.get_height() // 2)
 
             pygame.draw.rect(self.screen, (240, 240, 240), menu_rect, border_radius=12)
             # pygame.draw.rect(self.screen, (30, 30, 30), menu_rect, 3, border_radius=12)

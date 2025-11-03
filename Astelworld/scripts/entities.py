@@ -154,6 +154,8 @@ class Player(PhysicsEntity):
         self.knockback_timer = 0 # 넉백 유지 시간 선택
         self.knockback_immunity = 0 # 넉백 무적 프레임 (180 프레임)
 
+        self.wall_collision_count = 0
+
     def update(self, tilemap, movement=(0,0,0,0)):
         if self.factor != 0:
             movement = self.last_movement
@@ -187,7 +189,10 @@ class Player(PhysicsEntity):
             self.game.particles.append(Particle(self.game, 'particle', self.rect().center, velocity=pvelocity, frame=2))
 
         if self.is_fly and self.collision_normal.length() > 0:
-            self._bounce_by_reflection(restitution=0.6, friction=0.1)
+            self.wall_collision_count += 1
+            restitution = max(0.01, 0.8 - self.wall_collision_count * 0.3)
+            self._bounce_by_reflection(restitution=restitution, friction=0.1)
+
 
         if not self.collisions['down']:
             self.is_fly = True
@@ -196,6 +201,7 @@ class Player(PhysicsEntity):
             if self.is_fly:
                 self.jump_cnt = 1
                 self.is_fly = False
+                self.wall_collision_count = 0
                 # self.game.movement = [0, 0, 0, 0]
                 self.air_time = 0
                 self.factor = 0
