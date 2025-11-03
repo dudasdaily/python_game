@@ -16,7 +16,7 @@ class Game:
         self.clock = pygame.time.Clock()
         # self.screen = pygame.display.set_mode((640, 480))
         self.screen = pygame.display.set_mode((1280, 960))
-        # self.screen = pygame.display.set_mode((320, 240))5
+        # self.screen = pygame.display.set_mode((320, 240))
         self.display = pygame.Surface((320, 240))
         self.assets = {
             'snow' : load_images('tiles/snow'),
@@ -45,16 +45,20 @@ class Game:
         self.player = Player(self, (50, 50), (28, 27))
         self.movement = [0, 0, 0, 0]
         self.tilemap = Tilemap(self, tile_size = 16)
-        self.level = 0
+        self.level = '0'
+        self.cleared_maps = set()
         self.screenshake = 0
         self.portals = []
         self.visual_portals = []
+
+        self.pos_queue = [[100, self.display.get_height() - 30]]
 
         self.load_level(self.level)
         
 
     def load_level(self, map_id):
-        self.tilemap.load(f"data/maps/{map_id}.json")
+        self.tilemap.load(f"data/maps/{map_id}.json", self.cleared_maps)
+        self.level = map_id
         # 파티클
         self.leaf_spawners = []
         for tree in self.tilemap.extract([('large_decor', 2)], keep = True):
@@ -63,10 +67,14 @@ class Game:
         # 적 스포너
         self.enemies = []
         for spawner in self.tilemap.extract([('spawners', 0), ('spawners', 1)], keep=False):
-            if spawner['variant'] == 0:
+            if spawner['variant'] == 0 and self.level != '0':
                 self.player.pos = spawner['pos']
+                print(spawner['pos'])
             else:
                 self.enemies.append(Enemy(self, spawner['pos'], (20, 15)))
+
+        if self.level == '0':
+            self.player.pos = self.pos_queue.pop(0)
 
         self.projectiles = []
         self.particles = []
@@ -101,11 +109,11 @@ class Game:
             # self.display.fill((0,0,0))
             self.screenshake = max(0, self.screenshake - 1)
 
-            if not len(self.enemies): # 적이 없으면 다음 레벨(맵)로 변경한다!
+            if self.level != '0' and not len(self.enemies): # 맵의 모든 적을 처치했고, 현재 맵이 0번맵이 아니라면
                 self.transition += 1
                 if self.transition > 30:
-                    self.level += 1
-                    self.load_level(self.level)
+                    self.cleared_maps.add(self.level)
+                    self.load_level('0')
             if self.transition < 0: # 연출
                     self.transition += 1
 
@@ -115,8 +123,15 @@ class Game:
                     self.load_level(self.level)
 
             # 카메라 고정
-            self.scroll[0] += (self.player.rect().centerx - self.display.get_width() / 2 - self.scroll[0]) / 25
-            self.scroll[1] += (self.player.rect().centery - self.display.get_height() / 2 - self.scroll[1]) / 25
+            if self.level == '0':
+                self.scroll[0] = 0
+                if self.player.rect().top < self.scroll[1]:
+                    self.scroll[1] -= self.display.get_height()
+                if self.player.rect().bottom > self.scroll[1] + self.display.get_height():
+                    self.scroll[1] += self.display.get_height()
+            else:
+                self.scroll[0] += (self.player.rect().centerx - self.display.get_width() / 2 - self.scroll[0]) / 25
+                self.scroll[1] += (self.player.rect().centery - self.display.get_height() / 2 - self.scroll[1]) / 25
             render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
 
             # 나무 잎 파티클
@@ -159,7 +174,7 @@ class Game:
                         # elif self.player.is_fly and self.player.factor != 0:
                         #     self.player.jump_attack()
 
-                        elif self.player.is_fly:
+                        elif self.player.is_fly and self.level != '0':
                             self.player.jump_attack()
 
                 # 키 업
@@ -214,9 +229,9 @@ class Game:
 
             for portal in self.portals:
                 portal_rect = pygame.Rect(portal['pos'][0], portal['pos'][1], portal['size'][0], portal['size'][1])
-                if self.player.rect().colliderect(portal_rect):
-                    print("충돌!")
-                    self.level = portal['destination']
+                if self.player.rect().colliderect(portal_rect) and str(portal['destination']) not in self.cleared_maps:
+                    self.pos_queue.append(list(self.player.rect().center))
+                    self.level = str(portal['destination'])
                     self.load_level(self.level)
 
             # 총알

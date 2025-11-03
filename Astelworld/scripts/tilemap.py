@@ -90,16 +90,20 @@ class Tilemap:
         json.dump({'tilemap' : self.tile_map, 'tile_size' : self.tile_size, 'offgrid' : self.off_grid_tiles, 'portals' : self.portals}, f)
         f.close()
 
-    def load(self, path):
+    def load(self, path, cleared_maps=set()):
         f = open(path, 'r')
         map_data = json.load(f)
         f.close
 
-        self.tile_map = map_data['tilemap']
-        self.tile_size = map_data['tile_size']
-        self.off_grid_tiles = map_data['offgrid']
+        self.tile_map = {}
+        if 'tilemap' in map_data:
+            for loc, tile in map_data['tilemap'].items():
+                if tile.get('clear_required') not in cleared_maps:
+                    self.tile_map[loc] = tile
+
+        self.tile_size = map_data.get('tile_size', self.tile_size)
+        self.off_grid_tiles = map_data.get('offgrid', [])
         self.portals = map_data.get('portals', [])
-        # self.portals = map_data['portals']
 
 
     def solid_check(self, pos):

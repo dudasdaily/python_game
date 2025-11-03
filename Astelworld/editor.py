@@ -44,6 +44,10 @@ class Editor:
         self.ongrid = True
         self.portal_mode = False
 
+        self.clear_mode = False
+        self.clear_required_value = 0
+        self.font = pygame.font.SysFont("Arial", 18)
+
     def run(self):
         while True:
             self.clock.tick(60) # 60fps
@@ -82,7 +86,11 @@ class Editor:
                     self.display.blit(current_tile_img, mpos)
 
                 if self.clicking and self.ongrid:
-                    self.tilemap.tile_map[f"{tile_pos[0]};{tile_pos[1]}"] = {'type' : self.tile_list[self.tile_group], 'variant' : self.tile_variant, 'pos' : tile_pos}
+                    tile_loc = f"{tile_pos[0]};{tile_pos[1]}"
+                    tile_data = {'type' : self.tile_list[self.tile_group], 'variant' : self.tile_variant, 'pos' : tile_pos}
+                    if self.clear_mode and self.clear_required_value > 0:
+                        tile_data['clear_required'] = str(self.clear_required_value)
+                    self.tilemap.tile_map[tile_loc] = tile_data
 
             if self.right_clicking:
                 tile_loc = f"{tile_pos[0]};{tile_pos[1]}"
@@ -99,6 +107,10 @@ class Editor:
 
 
             self.display.blit(current_tile_img, (5, 5))
+
+            if self.clear_mode:
+                font_surf = self.font.render(f'Clear Required: {self.clear_required_value}', True, (255, 255, 255))
+                self.display.blit(font_surf, (self.display.get_width() - font_surf.get_width() - 5, 5))
             
 
             for event in pygame.event.get():
@@ -155,6 +167,13 @@ class Editor:
                         self.tilemap.autotile()
                     if event.key == pygame.K_p:
                         self.portal_mode = not self.portal_mode
+                    if event.key == pygame.K_c:
+                        self.clear_mode = not self.clear_mode
+                    if self.clear_mode:
+                        if event.key == pygame.K_UP:
+                            self.clear_required_value += 1
+                        if event.key == pygame.K_DOWN:
+                            self.clear_required_value = max(0, self.clear_required_value - 1)
 
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_a:

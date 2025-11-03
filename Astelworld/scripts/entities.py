@@ -176,8 +176,8 @@ class Player(PhysicsEntity):
             
         super().update(tilemap, movement = movement)
 
-        if self.air_time > 360:
-            if not self.game.dead:
+        if self.air_time > 300:
+            if not self.game.dead and self.game.level != 0:
                 self.game.screenshake = max(16, self.game.screenshake)
             self.game.dead += 1
 
