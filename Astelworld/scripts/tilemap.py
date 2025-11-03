@@ -93,17 +93,22 @@ class Tilemap:
     def load(self, path, cleared_maps=set()):
         f = open(path, 'r')
         map_data = json.load(f)
-        f.close
+        f.close()
 
+        newly_removed_tiles = []
         self.tile_map = {}
         if 'tilemap' in map_data:
             for loc, tile in map_data['tilemap'].items():
-                if tile.get('clear_required') not in cleared_maps:
+                if tile.get('clear_required') in cleared_maps:
+                    newly_removed_tiles.append(tile)
+                else:
                     self.tile_map[loc] = tile
 
         self.tile_size = map_data.get('tile_size', self.tile_size)
         self.off_grid_tiles = map_data.get('offgrid', [])
         self.portals = map_data.get('portals', [])
+
+        return newly_removed_tiles
 
 
     def solid_check(self, pos):

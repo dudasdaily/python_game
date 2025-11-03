@@ -46,7 +46,9 @@ class Editor:
 
         self.clear_mode = False
         self.clear_required_value = 0
-        self.font = pygame.font.SysFont("Arial", 18)
+        self.portal_dest_value = 0
+        self.font = pygame.font.SysFont("Arial", 14)
+        self.portal_font = pygame.font.SysFont("Arial", 14)
 
     def run(self):
         while True:
@@ -68,6 +70,8 @@ class Editor:
             mpos = (mpos[0] / RENDER_SCALE, mpos[1] / RENDER_SCALE)
 
             if self.portal_mode:
+                font_surf = self.portal_font.render(f'Destination: {self.portal_dest_value}', True, (0, 255, 0))
+                self.display.blit(font_surf, (self.display.get_width() - font_surf.get_width() - 5, self.display.get_height() - 20))
                 pygame.draw.rect(self.display, (0, 255, 0, 100), pygame.Rect(mpos[0] - 8, mpos[1] - 8, 16, 16))
                 if self.right_clicking:
                     for portal in self.tilemap.portals.copy():
@@ -111,7 +115,7 @@ class Editor:
             if self.clear_mode:
                 font_surf = self.font.render(f'Clear Required: {self.clear_required_value}', True, (255, 255, 255))
                 self.display.blit(font_surf, (self.display.get_width() - font_surf.get_width() - 5, 5))
-            
+                
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -122,7 +126,7 @@ class Editor:
                     if event.button == 1:
                         self.clicking = True
                         if self.portal_mode:
-                            self.tilemap.portals.append({'pos' : (mpos[0] + self.scroll[0] - 8, mpos[1] + self.scroll[1] - 8), 'size' : [16, 32], 'destination' : 1})
+                            self.tilemap.portals.append({'pos' : (mpos[0] + self.scroll[0] - 8, mpos[1] + self.scroll[1] - 8), 'size' : [16, 32], 'destination' : self.portal_dest_value})
                         elif not self.ongrid:
                             self.tilemap.off_grid_tiles.append({'type' : self.tile_list[self.tile_group], 'variant' : self.tile_variant, 'pos' : (mpos[0] + self.scroll[0], mpos[1] + self.scroll[1])})
 
@@ -174,6 +178,11 @@ class Editor:
                             self.clear_required_value += 1
                         if event.key == pygame.K_DOWN:
                             self.clear_required_value = max(0, self.clear_required_value - 1)
+                    if self.portal_mode:
+                        if event.key == pygame.K_UP:
+                            self.portal_dest_value += 1
+                        if event.key == pygame.K_DOWN:
+                            self.portal_dest_value = max(0, self.portal_dest_value - 1)
 
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_a:

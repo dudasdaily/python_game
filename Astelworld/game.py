@@ -50,6 +50,7 @@ class Game:
         self.screenshake = 0
         self.portals = []
         self.visual_portals = []
+        self.disappearing_tiles = []
 
         self.pos_queue = [[100, self.display.get_height() - 30]]
 
@@ -57,7 +58,16 @@ class Game:
         
 
     def load_level(self, map_id):
-        self.tilemap.load(f"data/maps/{map_id}.json", self.cleared_maps)
+        removed_tiles = self.tilemap.load(f"data/maps/{map_id}.json", self.cleared_maps)
+        for tile in removed_tiles:
+            is_animating = False
+            for t, _ in self.disappearing_tiles:
+                if t['pos'] == tile['pos']:
+                    is_animating = True
+                    break
+            if not is_animating:
+                self.disappearing_tiles.append([tile, 60])
+
         self.level = map_id
         # 파티클
         self.leaf_spawners = []
@@ -110,9 +120,9 @@ class Game:
             self.screenshake = max(0, self.screenshake - 1)
 
             if self.level != '0' and not len(self.enemies): # 맵의 모든 적을 처치했고, 현재 맵이 0번맵이 아니라면
+                self.cleared_maps.add(self.level)
                 self.transition += 1
                 if self.transition > 30:
-                    self.cleared_maps.add(self.level)
                     self.load_level('0')
             if self.transition < 0: # 연출
                     self.transition += 1
@@ -190,6 +200,15 @@ class Game:
             # 타일 맵 랜더링
             self.tilemap.render(self.display, render_scroll)
 
+            # 사라지는 타일 애니메이션
+            for i, (tile, timer) in enumerate(self.disappearing_tiles):
+                self.disappearing_tiles[i][1] = max(0, timer - 1)
+                tile_img = self.assets[tile['type']][tile['variant']].copy()
+                alpha = int(255 * (timer / 60))
+                tile_img.set_alpha(alpha)
+                self.display.blit(tile_img, (tile['pos'][0] * self.tilemap.tile_size - render_scroll[0], tile['pos'][1] * self.tilemap.tile_size - render_scroll[1]))
+            self.disappearing_tiles = [t for t in self.disappearing_tiles if t[1] > 0]
+
             for portal in self.visual_portals:
                 portal.update()
                 portal.render(self.display, (render_scroll[0] + 20, render_scroll[1] + 20))
@@ -227,10 +246,11 @@ class Game:
                             self.screenshake = max(16, self.screenshake)
                         self.player.enemy_collision_side(enemy)
 
+            # 포탈 충돌 감지
             for portal in self.portals:
                 portal_rect = pygame.Rect(portal['pos'][0], portal['pos'][1], portal['size'][0], portal['size'][1])
                 if self.player.rect().colliderect(portal_rect) and str(portal['destination']) not in self.cleared_maps:
-                    self.pos_queue.append(list(self.player.rect().center))
+                    self.pos_queue.append(list(self.player.pos))
                     self.level = str(portal['destination'])
                     self.load_level(self.level)
 
@@ -276,7 +296,7 @@ class Game:
                     self.particles.remove(particle)
 
             # 플레이어 히트박스 표시
-            # self.show_hitbox(self.player, render_scroll)
+            self.show_hitbox(self.player, render_scroll)
 
             if self.transition:
                 transition_surf = pygame.Surface(self.display.get_size())
