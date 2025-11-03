@@ -1,9 +1,10 @@
 import math
+from xml.dom.minidom import Entity
 import pygame
 import random
 import sys
 
-from scripts.entities import PhysicsEntity, Player, Enemy
+from scripts.entities import PhysicsEntity, Player, Enemy, Portal
 from scripts.utils import load_image, load_images, Animation
 from scripts.tilemap import Tilemap
 from scripts.particle import Particle
@@ -25,10 +26,6 @@ class Game:
             'stone' : load_images('tiles/stone'),
             'player' : load_image('entities/player.png'),
             'background' : load_image('background.png'),
-            # 'player/idle' : Animation(load_images('entities/player/idle', (226, 138, 172)), img_dur=10),
-            # 'player/jump' : Animation(load_images('entities/player/jump', (226, 138, 172))),
-            # 'player/run' : Animation(load_images('entities/player/run', (226, 138, 172))),
-            # 'player/charging' : Animation(load_images('entities/player/charging', (226, 138, 172))),
             'player/landing' : Animation(load_images('entities/player/landing'), img_dur=20, loop=True),
             'player/idle' : Animation(load_images('entities/player/idle'), img_dur=20),
             'player/jump' : Animation(load_images('entities/player/jump')),
@@ -36,6 +33,7 @@ class Game:
             'player/charging' : Animation(load_images('entities/player/charging')),
             'player/fall' : Animation(load_images('entities/player/fall')),
             'slime/idle' : Animation(load_images('entities/slime/idle'), img_dur=12),
+            'portal/idle' : Animation(load_images('tiles/portal', (255, 255, 255)), img_dur=12),
             'enemy/idle' : Animation(load_images('entities/enemy/idle'), img_dur=6),
             'enemy/run' : Animation(load_images('entities/enemy/run'), img_dur=6),
             'particle/leaf' : Animation(load_images('particles/leaf'), img_dur=20, loop=False),
@@ -48,9 +46,11 @@ class Game:
         self.movement = [0, 0, 0, 0]
         self.tilemap = Tilemap(self, tile_size = 16)
         self.level = 0
-        self.load_level(self.level)
         self.screenshake = 0
+        self.portals = []
+        self.visual_portals = []
 
+        self.load_level(self.level)
         
 
     def load_level(self, map_id):
@@ -77,6 +77,11 @@ class Game:
         self.player.air_time = 0
         self.transition = -30
 
+        self.portals = self.tilemap.portals
+        self.visual_portals = []
+        for portal in self.portals:
+            self.visual_portals.append(Portal(self, portal['pos'], portal['size']))
+
     def kill_enemy(self, enemy):
         """적을 죽이고 파티클 생성"""
         for i in range(30):
@@ -92,10 +97,8 @@ class Game:
     def run(self):
         while True:
             self.clock.tick(60) # 60fps
-            # self.display.blit(self.assets['background'], (0, 0))
-            self.display.fill((0,0,0))
-
             self.display.blit(self.assets['background'], (0, 0))
+            # self.display.fill((0,0,0))
             self.screenshake = max(0, self.screenshake - 1)
 
             if not len(self.enemies): # 적이 없으면 다음 레벨(맵)로 변경한다!
@@ -114,7 +117,7 @@ class Game:
             # 카메라 고정
             self.scroll[0] += (self.player.rect().centerx - self.display.get_width() / 2 - self.scroll[0]) / 25
             self.scroll[1] += (self.player.rect().centery - self.display.get_height() / 2 - self.scroll[1]) / 25
-            render_scroll = (int(self.scroll[0]), int(self.scroll[1]))            
+            render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
 
             # 나무 잎 파티클
             for rect in self.leaf_spawners:
@@ -169,16 +172,18 @@ class Game:
                         self.player.charge = pygame.time.get_ticks() - self.player.charge
                         self.player.jump()
 
+            # 타일 맵 랜더링
             self.tilemap.render(self.display, render_scroll)
+
+            for portal in self.visual_portals:
+                portal.update()
+                portal.render(self.display, (render_scroll[0] + 20, render_scroll[1] + 20))
 
             for enemy in self.enemies.copy():
                 kill = enemy.update(self.tilemap, (0, 0))
                 enemy.render(self.display, offset=render_scroll)
                 # 적 히트박스 표시
-                # self.rectangle = enemy.rect()
-                # self.rectangle.x -= render_scroll[0]
-                # self.rectangle.y -= render_scroll[1]
-                # pygame.draw.rect(self.display, (0, 0, 0), self.rectangle, 2)
+                # self.show_hitbox(enemy, render_scroll)
 
                 if kill:
                     self.enemies.remove(enemy)
@@ -206,6 +211,14 @@ class Game:
                         if not self.player.knockback_immunity:
                             self.screenshake = max(16, self.screenshake)
                         self.player.enemy_collision_side(enemy)
+
+            for portal in self.portals:
+                portal_rect = pygame.Rect(portal['pos'][0], portal['pos'][1], portal['size'][0], portal['size'][1])
+                if self.player.rect().colliderect(portal_rect):
+                    print("충돌!")
+                    self.level = portal['destination']
+                    self.load_level(self.level)
+
             # 총알
             # projectile[] = [[x, y], direction, timer]
             for projectile in self.projectiles.copy():
@@ -248,10 +261,7 @@ class Game:
                     self.particles.remove(particle)
 
             # 플레이어 히트박스 표시
-            # self.rectangle = self.player.rect()
-            # self.rectangle.x -= render_scroll[0]
-            # self.rectangle.y -= render_scroll[1]
-            # pygame.draw.rect(self.display, (0, 0, 0), self.rectangle, 2)
+            # self.show_hitbox(self.player, render_scroll)
 
             if self.transition:
                 transition_surf = pygame.Surface(self.display.get_size())
@@ -288,5 +298,11 @@ class Game:
             # pygame.draw.rect(self.screen, (30, 30, 30), menu_rect, 3, border_radius=12)
 
             pygame.display.update()
+
+    def show_hitbox(self, entity : Entity, offset=(0, 0)):
+        rectangle = entity.rect()
+        rectangle.x -= offset[0]
+        rectangle.y -= offset[1]
+        pygame.draw.rect(self.display, (0, 0, 0), rectangle, 2)
 
 Game().run()

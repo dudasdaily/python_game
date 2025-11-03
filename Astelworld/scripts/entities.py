@@ -414,3 +414,16 @@ class Player(PhysicsEntity):
     def render(self, surf, offset=(0, 0)):
         if not self.is_attacking:
             super().render(surf, offset=offset)
+
+class Portal:
+    def __init__(self, game, pos, size):
+        self.game = game
+        self.pos = pos
+        self.size = size
+        self.animation = self.game.assets['portal/idle'].copy()
+
+    def update(self):
+        self.animation.update()
+
+    def render(self, surf, offset=(0, 0)):
+        surf.blit(self.animation.img(), (self.pos[0] - offset[0], self.pos[1] - offset[1]))

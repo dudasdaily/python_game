@@ -23,6 +23,7 @@ class Tilemap:
         self.tile_size = tile_size
         self.tile_map = {} # tile_map = {'grass' : {}, ... } ,tile_map['grass'] = { 'type' : 'grass', 'variant' : 0, 'pos' : (xpos, ypos)}
         self.off_grid_tiles = []
+        self.portals = []
 
     # def tiles_around(self, pos):
     #     tiles = []
@@ -86,7 +87,7 @@ class Tilemap:
 
     def save(self, path):
         f = open(path, 'w')
-        json.dump({'tilemap' : self.tile_map, 'tile_size' : self.tile_size, 'offgrid' : self.off_grid_tiles}, f)
+        json.dump({'tilemap' : self.tile_map, 'tile_size' : self.tile_size, 'offgrid' : self.off_grid_tiles, 'portals' : self.portals}, f)
         f.close()
 
     def load(self, path):
@@ -97,6 +98,9 @@ class Tilemap:
         self.tile_map = map_data['tilemap']
         self.tile_size = map_data['tile_size']
         self.off_grid_tiles = map_data['offgrid']
+        self.portals = map_data.get('portals', [])
+        # self.portals = map_data['portals']
+
 
     def solid_check(self, pos):
         tile_loc = f"{int(pos[0]//self.tile_size)};{int(pos[1]//self.tile_size)}"

@@ -19,6 +19,8 @@ class Editor:
             'large_decor' : load_images('tiles/large_decor'),
             'stone' : load_images('tiles/stone'),
             'spawners' : load_images('tiles/spawners'),
+            # 'portal_hitbox' : load_images(''),
+            'portal' : load_images('tiles/portal', (255, 255, 255)),
         }
 
         self.movement = [0, 0, 0, 0] # 좌, 우, 상, 하
@@ -40,6 +42,7 @@ class Editor:
         self.right_clicking = False
         self.shift = False
         self.ongrid = True
+        self.portal_mode = False
 
     def run(self):
         while True:
@@ -59,17 +62,27 @@ class Editor:
             # 화면에는 RENDER_SCALE 만큼 스케일링된 픽셀들이 보일 것임
             # 그래서 우리의 마우스 위치를 RENDER_SCALE만큼 나눠줘야함
             mpos = (mpos[0] / RENDER_SCALE, mpos[1] / RENDER_SCALE)
-            # 마우스의 타일 좌표
-            tile_pos = (int((mpos[0] + self.scroll[0]) // self.tilemap.tile_size), int((mpos[1] + self.scroll[1]) // self.tilemap.tile_size))
 
-            if self.ongrid:
-                # 내 마우스 커서의 위치에서 타일이 어디 놓일것인지 나타냄!
-                self.display.blit(current_tile_img, (tile_pos[0] * self.tilemap.tile_size - self.scroll[0], tile_pos[1] * self.tilemap.tile_size - self.scroll[1]))
+            if self.portal_mode:
+                pygame.draw.rect(self.display, (0, 255, 0, 100), pygame.Rect(mpos[0] - 8, mpos[1] - 8, 16, 16))
+                if self.right_clicking:
+                    for portal in self.tilemap.portals.copy():
+                        portal_rect = pygame.Rect(portal['pos'][0], portal['pos'][1], portal['size'][0], portal['size'][1] * 2)
+                        if portal_rect.collidepoint((mpos[0] + self.scroll[0], mpos[1] + self.scroll[1])):
+                            self.tilemap.portals.remove(portal)
+
             else:
-                self.display.blit(current_tile_img, mpos)
+                # 마우스의 타일 좌표
+                tile_pos = (int((mpos[0] + self.scroll[0]) // self.tilemap.tile_size), int((mpos[1] + self.scroll[1]) // self.tilemap.tile_size))
 
-            if self.clicking and self.ongrid:
-                self.tilemap.tile_map[f"{tile_pos[0]};{tile_pos[1]}"] = {'type' : self.tile_list[self.tile_group], 'variant' : self.tile_variant, 'pos' : tile_pos}
+                if self.ongrid:
+                    # 내 마우스 커서의 위치에서 타일이 어디 놓일것인지 나타냄!
+                    self.display.blit(current_tile_img, (tile_pos[0] * self.tilemap.tile_size - self.scroll[0], tile_pos[1] * self.tilemap.tile_size - self.scroll[1]))
+                else:
+                    self.display.blit(current_tile_img, mpos)
+
+                if self.clicking and self.ongrid:
+                    self.tilemap.tile_map[f"{tile_pos[0]};{tile_pos[1]}"] = {'type' : self.tile_list[self.tile_group], 'variant' : self.tile_variant, 'pos' : tile_pos}
 
             if self.right_clicking:
                 tile_loc = f"{tile_pos[0]};{tile_pos[1]}"
@@ -80,6 +93,10 @@ class Editor:
                     tile_r = pygame.Rect(tile['pos'][0] - self.scroll[0], tile['pos'][1] - self.scroll[1], tile_img.get_width(), tile_img.get_height())
                     if tile_r.collidepoint(mpos): # 다른 사각형 말고, 좌표와 충돌하는지 검사!
                         self.tilemap.off_grid_tiles.remove(tile)
+
+            for portal in self.tilemap.portals:
+                pygame.draw.rect(self.display, (0, 0, 255, 100), pygame.Rect(portal['pos'][0] - render_scroll[0], portal['pos'][1] - render_scroll[1], portal['size'][0], portal['size'][1]))
+
 
             self.display.blit(current_tile_img, (5, 5))
             
@@ -92,7 +109,9 @@ class Editor:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         self.clicking = True
-                        if not self.ongrid:
+                        if self.portal_mode:
+                            self.tilemap.portals.append({'pos' : (mpos[0] + self.scroll[0] - 8, mpos[1] + self.scroll[1] - 8), 'size' : [16, 32], 'destination' : 1})
+                        elif not self.ongrid:
                             self.tilemap.off_grid_tiles.append({'type' : self.tile_list[self.tile_group], 'variant' : self.tile_variant, 'pos' : (mpos[0] + self.scroll[0], mpos[1] + self.scroll[1])})
 
                     if event.button == 3:
@@ -134,6 +153,8 @@ class Editor:
                         self.tilemap.save(MAP_PATH)
                     if event.key == pygame.K_t:
                         self.tilemap.autotile()
+                    if event.key == pygame.K_p:
+                        self.portal_mode = not self.portal_mode
 
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_a:
