@@ -94,6 +94,7 @@ class Game:
 
         self.scroll = [0, 0] # 카메라 위치(position)
         self.dead = 0
+        self.player.knockback_immunity = 0
         self.player.air_time = 0
         self.transition = -30
 
@@ -128,6 +129,10 @@ class Game:
                     self.load_level('0')
             if self.transition < 0: # 연출
                     self.transition += 1
+
+            if self.player.hp <= 0:
+                self.dead += 1
+                self.player.hp = self.player.max_hp
 
             if self.dead:
                 self.dead += 1
@@ -248,6 +253,7 @@ class Game:
                     # 3) 그 외는 좌/우 측면 충돌로 간주
                     else:
                         if not self.player.knockback_immunity:
+                            self.player.hp -= 1
                             self.screenshake = max(16, self.screenshake)
                         self.player.enemy_collision_side(enemy)
 
@@ -277,7 +283,8 @@ class Game:
                 elif not self.player.is_attacking: # 점프 공격중에는 총알 안맞음
                     if self.player.rect().collidepoint(projectile[0]) and not self.player.knockback_immunity: # 플레이어가 총알에 맞았다면
                         self.projectiles.remove(projectile)
-                        self.dead += 1
+                        self.player.hp -= 1
+                        self.player.knockback_immunity = self.player.max_knockback_immunity
                         self.screenshake = max(16, self.screenshake)
                         for i in range(30):
                             angle = random.random() * math.pi * 2

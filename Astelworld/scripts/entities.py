@@ -15,6 +15,7 @@ class PhysicsEntity:
         self.size = size
         self.velocity = [1.5, 1.5]
         self.last_movement = [0, 0, 0, 0]
+        self.alpha = 255 # 투명도
 
         self.collisions = { 'up' : False, 'down' : False, 'right' : False, 'left' : False } # 충돌이 일어났는가?
         self.collision_normal = Vector2()
@@ -88,6 +89,7 @@ class PhysicsEntity:
         self.animation.update()
 
     def render(self, surf, offset = (0, 0)):
+        self.animation.img().set_alpha(self.alpha)
         surf.blit(pygame.transform.flip(self.animation.img(), self.flip, False), (self.pos[0] - offset[0] + self.anim_offset[0], self.pos[1] - offset[1] + self.anim_offset[1]))
 
 
@@ -142,7 +144,7 @@ class Player(PhysicsEntity):
     def __init__(self, game, pos, size):
         super().__init__(game, 'player', pos, size)
         self.max_hp = 3
-        self.hp = 2
+        self.hp = 3
         self.anim_offset = (0, -5)
         self.air_time = 0
         self.jump_cnt = 1
@@ -155,6 +157,8 @@ class Player(PhysicsEntity):
         self.hurt_cooldown = 0 # 짧은 연속 판정 방지
         self.knockback_timer = 0 # 넉백 유지 시간 선택
         self.knockback_immunity = 0 # 넉백 무적 프레임 (180 프레임)
+
+        self.max_knockback_immunity = 180
 
         self.wall_collision_count = 0
 
@@ -172,7 +176,11 @@ class Player(PhysicsEntity):
             self.hurt_cooldown -= 1
         
         if self.knockback_immunity > 0:
+            self.alpha = 125
             self.knockback_immunity -= 1
+
+        else:
+            self.alpha = 255
 
         if self.knockback_timer > 0:
             movement = self.last_movement
@@ -381,7 +389,7 @@ class Player(PhysicsEntity):
         if getattr(self, 'factor', 0) <= 0:
             self.factor = 1
 
-        self.knockback_immunity = 180
+        self.knockback_immunity = self.max_knockback_immunity
 
     def enemy_collision_side(self, enemy):
         """좌/우 측면 충돌: 진행 반대로 수평 넉백(지상에서도 강제)."""
