@@ -98,6 +98,10 @@ class Tilemap:
         newly_removed_tiles = []
         self.tile_map = {}
         if 'tilemap' in map_data:
+            """
+            loc : "0;0"
+            tile : {"type": "stone", "variant": 0, "pos": [18,0], "clear_required": "1"}
+            """
             for loc, tile in map_data['tilemap'].items():
                 if tile.get('clear_required') in cleared_maps:
                     newly_removed_tiles.append(tile)

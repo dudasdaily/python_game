@@ -9,6 +9,7 @@ from scripts.utils import load_image, load_images, Animation
 from scripts.tilemap import Tilemap
 from scripts.particle import Particle
 from scripts.spark import Spark
+from scripts.hud import Hp
 
 class Game:
     def __init__(self):
@@ -19,6 +20,7 @@ class Game:
         # self.screen = pygame.display.set_mode((320, 240))
         self.display = pygame.Surface((320, 240))
         self.assets = {
+            'hp' : load_images('ui/hp'),
             'snow' : load_images('tiles/snow'),
             'decor' : load_images('tiles/decor'),
             'grass' : load_images('tiles/grass'),
@@ -51,6 +53,7 @@ class Game:
         self.portals = []
         self.visual_portals = []
         self.disappearing_tiles = []
+        self.hp_ui = Hp(self, self.player)
 
         self.pos_queue = [[100, self.display.get_height() - 30]]
 
@@ -66,7 +69,7 @@ class Game:
                     is_animating = True
                     break
             if not is_animating:
-                self.disappearing_tiles.append([tile, 60])
+                self.disappearing_tiles.append([tile, 100])
 
         self.level = map_id
         # 파티클
@@ -223,6 +226,8 @@ class Game:
                     self.enemies.remove(enemy)
             if not self.dead:
                 self.player.update(self.tilemap, self.movement)
+                self.hp_ui.update()
+                self.hp_ui.render(self.display)
                 self.player.render(self.display, render_scroll)
             
             # 플레이어와 적 충돌 감지

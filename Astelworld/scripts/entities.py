@@ -141,6 +141,8 @@ class Enemy(PhysicsEntity):
 class Player(PhysicsEntity):
     def __init__(self, game, pos, size):
         super().__init__(game, 'player', pos, size)
+        self.max_hp = 3
+        self.hp = 2
         self.anim_offset = (0, -5)
         self.air_time = 0
         self.jump_cnt = 1
