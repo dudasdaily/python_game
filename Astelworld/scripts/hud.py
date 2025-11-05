@@ -19,7 +19,14 @@ class Hp:
             return
         
         for i, x in enumerate(range(10, 10 + self.hp_img_width * 3, self.hp_img_width)):
-            self.game.display.blit(self.hp_bar[i], (x, 10))
+            surf.blit(self.hp_bar[i], (x, 10))
             
-
-
+class Timer:
+    def __init__(self, game):
+        self.game = game
+        self.timer = pygame.font.Font()
+    def update(self):
+        pass
+    def render(self, surf):
+        # surf.blit()
+        pass

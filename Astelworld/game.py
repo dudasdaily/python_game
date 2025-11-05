@@ -44,7 +44,7 @@ class Game:
             'gun' : load_image('gun.png'),
             'projectile' : load_image('projectile.png'),
         }
-        self.player = Player(self, (50, 50), (28, 27))
+        self.player = Player(self, (50, 50), (22, 27))
         self.movement = [0, 0, 0, 0]
         self.tilemap = Tilemap(self, tile_size = 16)
         self.level = '0'
