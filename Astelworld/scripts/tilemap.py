@@ -86,6 +86,7 @@ class Tilemap:
                 tile['variant'] = AUTOTILE_MAP[neighbors]
 
     def save(self, path):
+        print("saved!")
         f = open(path, 'w')
         json.dump({'tilemap' : self.tile_map, 'tile_size' : self.tile_size, 'offgrid' : self.off_grid_tiles, 'portals' : self.portals}, f)
         f.close()
