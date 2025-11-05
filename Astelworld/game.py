@@ -55,8 +55,7 @@ class Game:
         self.disappearing_tiles = []
         self.hp_ui = Hp(self, self.player)
 
-        self.pos_queue = [[100, self.display.get_height() - 30]]
-
+        self.pos_queue = [[100, self.display.get_height() - 30]] # 포탈 타기 전 플레이어의 위치를 저장하는 리스트
         self.load_level(self.level)
         
 
@@ -86,7 +85,10 @@ class Game:
                 self.enemies.append(Enemy(self, spawner['pos'], (20, 15)))
 
         if self.level == '0':
-            self.player.pos = self.pos_queue.pop(0)
+            if not len(self.pos_queue):
+                self.player.pos = [100, self.display.get_height() - 30]
+            else:
+                self.player.pos = self.pos_queue.pop(0)
 
         self.projectiles = []
         self.particles = []
@@ -168,6 +170,11 @@ class Game:
                     if event.key == pygame.K_ESCAPE:
                         self.movement = [0, 0, 0, 0]
                         self.ingame_menu()
+
+                    if event.key == pygame.K_p:
+                        self.player.pos=[90, -171]
+                        print(self.level)
+                        print(self.player.pos)
 
                     if event.key == pygame.K_LEFT and not self.player.is_fly:
                         if not self.player.is_charging:
