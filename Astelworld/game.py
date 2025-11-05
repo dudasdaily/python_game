@@ -61,7 +61,7 @@ class Game:
         
 
     def load_level(self, map_id):
-        removed_tiles = self.tilemap.load(f"data/maps/{map_id}.json", self.cleared_maps)
+        removed_tiles = self.tilemap.load(f"data/jump/maps/{map_id}.json", self.cleared_maps)
         for tile in removed_tiles:
             is_animating = False
             for t, _ in self.disappearing_tiles:
