@@ -4,7 +4,7 @@ import pygame
 import math
 import random
 from pygame.math import Vector2
-from scripts.particle import Particle 
+from scripts.particle import Particle
 from scripts.spark import Spark
 
 class PhysicsEntity:
