@@ -39,7 +39,7 @@ class Timer:
         surf.blit(self.score_surf, (surf.get_width() - 80, 5))
 
     def get_time(self) -> string:
-        current_time = pygame.time.get_ticks()
+        current_time = pygame.time.get_ticks() - self.game.paused_time
         
         hour = current_time // 3600000
         current_time %= 3600000

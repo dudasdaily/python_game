@@ -15,10 +15,11 @@ class Game:
     def __init__(self):
         pygame.init()
         self.clock = pygame.time.Clock()
+        self.paused_time = 0
         self.timer = Timer(self)
+        # self.screen = pygame.display.set_mode((320, 240))
         self.screen = pygame.display.set_mode((640, 480))
         # self.screen = pygame.display.set_mode((1280, 960))
-        # self.screen = pygame.display.set_mode((320, 240))
         self.display = pygame.Surface((320, 240))
         self.assets = {
             'hp' : load_images('ui/hp'),
@@ -59,67 +60,10 @@ class Game:
         self.pos_queue = [[100, self.display.get_height() - 30]] # 포탈 타기 전 플레이어의 위치를 저장하는 리스트
         self.load_level(self.level)
         
-
-    def load_level(self, map_id):
-        removed_tiles = self.tilemap.load(f"data/jump/maps/{map_id}.json", self.cleared_maps)
-        for tile in removed_tiles:
-            is_animating = False
-            for t, _ in self.disappearing_tiles:
-                if t['pos'] == tile['pos']:
-                    is_animating = True
-                    break
-            if not is_animating:
-                self.disappearing_tiles.append([tile, 100])
-
-        self.level = map_id
-        # 파티클
-        self.leaf_spawners = []
-        for tree in self.tilemap.extract([('large_decor', 2)], keep = True):
-            self.leaf_spawners.append(pygame.Rect(4 + tree['pos'][0], 4 + tree['pos'][1], 23, 13))
-
-        # 적 스포너
-        self.enemies = []
-        for spawner in self.tilemap.extract([('spawners', 0), ('spawners', 1)], keep=False):
-            if spawner['variant'] == 0 and self.level != '0':
-                self.player.pos = spawner['pos']
-            else:
-                self.enemies.append(Enemy(self, spawner['pos'], (20, 15)))
-
-        if self.level == '0':
-            if not len(self.pos_queue):
-                self.player.pos = [100, self.display.get_height() - 30]
-            else:
-                self.player.pos = self.pos_queue.pop(0)
-
-        self.projectiles = []
-        self.particles = []
-        self.sparks = []
-
-        self.scroll = [0, 0] # 카메라 위치(position)
-        self.dead = 0
-        self.player.knockback_immunity = 0
-        self.player.air_time = 0
-        self.transition = -30
-
-        self.portals = self.tilemap.portals
-        self.visual_portals = []
-        for portal in self.portals:
-            self.visual_portals.append(Portal(self, portal['pos'], portal['size']))
-
-    def kill_enemy(self, enemy):
-        """적을 죽이고 파티클 생성"""
-        for i in range(30):
-            angle = random.random() * math.pi * 2
-            speed = random.random() * 5
-            self.sparks.append(Spark(enemy.rect().center, angle, 2 + random.random()))
-            self.particles.append(Particle(self, 'particle', enemy.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
-        
-        self.sparks.append(Spark(enemy.rect().center, 0, 5 + random.random()))
-        self.sparks.append(Spark(enemy.rect().center, math.pi, 5 + random.random()))
-        self.enemies.remove(enemy)
-
     def run(self):
-        while True:
+        play = True
+
+        while play:
             self.clock.tick(60) # 60fps
             self.display.blit(self.assets['background'], (0, 0))
             # self.display.fill((0,0,0))
@@ -331,10 +275,69 @@ class Game:
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), screenshake_offset)
             pygame.display.update()
 
+    def load_level(self, map_id):
+        removed_tiles = self.tilemap.load(f"data/jump/maps/{map_id}.json", self.cleared_maps)
+        for tile in removed_tiles:
+            is_animating = False
+            for t, _ in self.disappearing_tiles:
+                if t['pos'] == tile['pos']:
+                    is_animating = True
+                    break
+            if not is_animating:
+                self.disappearing_tiles.append([tile, 100])
+
+        self.level = map_id
+        # 파티클
+        self.leaf_spawners = []
+        for tree in self.tilemap.extract([('large_decor', 2)], keep = True):
+            self.leaf_spawners.append(pygame.Rect(4 + tree['pos'][0], 4 + tree['pos'][1], 23, 13))
+
+        # 적 스포너
+        self.enemies = []
+        for spawner in self.tilemap.extract([('spawners', 0), ('spawners', 1)], keep=False):
+            if spawner['variant'] == 0 and self.level != '0':
+                self.player.pos = spawner['pos']
+            else:
+                self.enemies.append(Enemy(self, spawner['pos'], (20, 15)))
+
+        if self.level == '0':
+            if not len(self.pos_queue):
+                self.player.pos = [100, self.display.get_height() - 30]
+            else:
+                self.player.pos = self.pos_queue.pop(0)
+
+        self.projectiles = []
+        self.particles = []
+        self.sparks = []
+
+        self.scroll = [0, 0] # 카메라 위치(position)
+        self.dead = 0
+        self.player.knockback_immunity = 0
+        self.player.air_time = 0
+        self.transition = -30
+
+        self.portals = self.tilemap.portals
+        self.visual_portals = []
+        for portal in self.portals:
+            self.visual_portals.append(Portal(self, portal['pos'], portal['size']))
+
+    def kill_enemy(self, enemy):
+        """적을 죽이고 파티클 생성"""
+        for i in range(30):
+            angle = random.random() * math.pi * 2
+            speed = random.random() * 5
+            self.sparks.append(Spark(enemy.rect().center, angle, 2 + random.random()))
+            self.particles.append(Particle(self, 'particle', enemy.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
+        
+        self.sparks.append(Spark(enemy.rect().center, 0, 5 + random.random()))
+        self.sparks.append(Spark(enemy.rect().center, math.pi, 5 + random.random()))
+        self.enemies.remove(enemy)
+
     def ingame_menu(self):
         running = True
-
         base_screen = self.screen.copy()
+
+        pause_time = pygame.time.get_ticks()
 
         while running:
             # self.display.fill((0, 0, 0))
@@ -357,6 +360,9 @@ class Game:
             # pygame.draw.rect(self.screen, (30, 30, 30), menu_rect, 3, border_radius=12)
 
             pygame.display.update()
+
+        resume_time = pygame.time.get_ticks()
+        self.paused_time += resume_time - pause_time
 
     def show_hitbox(self, entity : Entity, offset=(0, 0)):
         rectangle = entity.rect()
