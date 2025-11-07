@@ -66,7 +66,6 @@ class Game:
         while play:
             self.clock.tick(60) # 60fps
             self.display.blit(self.assets['background'], (0, 0))
-            # self.display.fill((0,0,0))
             self.screenshake = max(0, self.screenshake - 1)
 
             if self.level != '0' and not len(self.enemies): # 맵의 모든 적을 처치했고, 현재 맵이 0번맵이 아니라면
@@ -123,11 +122,6 @@ class Game:
                         self.movement = [0, 0, 0, 0]
                         self.ingame_menu()
 
-                    if event.key == pygame.K_p:
-                        self.player.pos=[90, -171]
-                        print(self.level)
-                        print(self.player.pos)
-
                     if event.key == pygame.K_LEFT and not self.player.is_fly:
                         if not self.player.is_charging:
                             self.movement[0] = 1
@@ -148,9 +142,6 @@ class Game:
                             self.player.jump_cnt -= 1
                             self.movement = [0, 0, 0, 0]
 
-                        # elif self.player.is_fly and self.player.factor != 0:
-                        #     self.player.jump_attack()
-
                         elif self.player.is_fly and self.level != '0':
                             self.player.jump_attack()
 
@@ -161,7 +152,7 @@ class Game:
                     if event.key == pygame.K_RIGHT:
                         self.movement[1] = 0
                     if event.key == pygame.K_SPACE:
-                        self.player.charge = pygame.time.get_ticks() - self.player.charge
+                        self.player.charge = pygame.time.get_ticks() - self.player.charge - self.paused_time
                         self.player.jump()
 
 
@@ -178,7 +169,7 @@ class Game:
             for i, (tile, timer) in enumerate(self.disappearing_tiles):
                 self.disappearing_tiles[i][1] = max(0, timer - 1)
                 tile_img = self.assets[tile['type']][tile['variant']].copy()
-                alpha = int(255 * (timer / 60))
+                alpha = int(255 * (timer / 20))
                 tile_img.set_alpha(alpha)
                 self.display.blit(tile_img, (tile['pos'][0] * self.tilemap.tile_size - render_scroll[0], tile['pos'][1] * self.tilemap.tile_size - render_scroll[1]))
             self.disappearing_tiles = [t for t in self.disappearing_tiles if t[1] > 0]

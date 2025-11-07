@@ -43,8 +43,4 @@ class Animation:
                 self.done = True
 
     def img(self):
-        return self.images[int(self.frame / self.img_duration)] # 보여줄 이미지 프레임 반환!
-
-
-    
-        
+        return self.images[int(self.frame / self.img_duration)] # 보여줄 이미지 프레임 반환!    

@@ -24,20 +24,7 @@ class Tilemap:
         self.tile_map = {} # tile_map = {'grass' : {}, ... } ,tile_map['grass'] = { 'type' : 'grass', 'variant' : 0, 'pos' : (xpos, ypos)}
         self.off_grid_tiles = []
         self.portals = []
-
-    # def tiles_around(self, pos):
-    #     tiles = []
-    #     tile_loc = (int(pos[0] // self.tile_size), int(pos[1] // self.tile_size))
-
-    #     for offset in NEIGHBOR_OFFSET:
-    #         check_loc = str(tile_loc[0] + offset[0]) + ';' + str(tile_loc[1] + offset[1])
-
-    #         if check_loc in self.tile_map:
-    #             tiles.append(self.tile_map[check_loc])
         
-    #     return tiles
-    
-    # 충돌 감지 로직 변경! pos(플레이어의 왼쪽 위 좌표)의 주변타일 -> rect(히트박스)의 주변타일
     def physics_rects_in_region(self, rect):
         """
             엔티티의 히트박스(Rect)를 입력으로 받아서
@@ -114,7 +101,6 @@ class Tilemap:
         self.portals = map_data.get('portals', [])
 
         return newly_removed_tiles
-
 
     def solid_check(self, pos):
         tile_loc = f"{int(pos[0]//self.tile_size)};{int(pos[1]//self.tile_size)}"
