@@ -9,12 +9,13 @@ from scripts.utils import load_image, load_images, Animation
 from scripts.tilemap import Tilemap
 from scripts.particle import Particle
 from scripts.spark import Spark
-from scripts.hud import Hp
+from scripts.hud import Hp, Timer
 
 class Game:
     def __init__(self):
         pygame.init()
         self.clock = pygame.time.Clock()
+        self.timer = Timer(self)
         self.screen = pygame.display.set_mode((640, 480))
         # self.screen = pygame.display.set_mode((1280, 960))
         # self.screen = pygame.display.set_mode((320, 240))
@@ -241,6 +242,9 @@ class Game:
                 self.hp_ui.update()
                 self.hp_ui.render(self.display)
                 self.player.render(self.display, render_scroll)
+
+            self.timer.update()
+            self.timer.render(self.display)
             
             # 플레이어와 적 충돌 감지
             for enemy in self.enemies:

@@ -1,4 +1,7 @@
+import string
 import pygame
+
+FONT_PATH = 'data/jump/font/NeoDunggeunmoPro-Regular.ttf'
 
 class Hp:
     def __init__(self, game, player):
@@ -24,9 +27,27 @@ class Hp:
 class Timer:
     def __init__(self, game):
         self.game = game
-        self.timer = pygame.font.Font()
+        self.timer = pygame.font.Font(FONT_PATH, 14)
+        self.score_surf = None
+        self.elapsed_time = None
+
     def update(self):
-        pass
+        self.elapsed_time = self.get_time()
+        self.score_surf = self.timer.render(self.elapsed_time, False, (255, 255, 255))
+
     def render(self, surf):
-        # surf.blit()
-        pass
+        surf.blit(self.score_surf, (surf.get_width() - 80, 5))
+
+    def get_time(self) -> string:
+        current_time = pygame.time.get_ticks()
+        
+        hour = current_time // 3600000
+        current_time %= 3600000
+
+        min = current_time // 60000
+        current_time %= 60000
+
+        sec = current_time // 1000
+        current_time %= 1000
+
+        return f"{hour:02d}:{min:02d}:{sec:02d}.{current_time // 10:02d}"
