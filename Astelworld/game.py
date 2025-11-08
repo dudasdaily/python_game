@@ -135,6 +135,12 @@ class Game:
                 self.player.hp = self.player.max_hp
 
             if self.dead:
+                self.screenshake = max(16, self.screenshake)
+                for i in range(5):
+                    angle = random.random() * math.pi * 2
+                    speed = random.random() * 5
+                    self.sparks.append(Spark(self.player.rect().center, angle, 2 + random.random()))
+                    self.particles.append(Particle(self, 'particle', self.player.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
                 self.dead += 1
                 if self.dead > 40:
                     self.load_level(self.level)

@@ -191,7 +191,10 @@ class Player(PhysicsEntity):
         if self.air_time > 300:
             if not self.game.dead and self.game.level != 0:
                 self.game.screenshake = max(16, self.game.screenshake)
-            self.game.dead += 1
+                self.hp -= 1
+
+                if self.hp > 0:
+                    self.game.load_level(self.game.level)
 
 
         if (self.is_attacking):
