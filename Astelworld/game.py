@@ -63,6 +63,8 @@ class Game:
         self.background = 'background0'
         self.background_idx = 0
 
+        self.final_score = None
+
         self.pos_queue = [[100, self.display.get_height() - 30]] # 포탈 타기 전 플레이어의 위치를 저장하는 리스트
         self.load_level(self.level)
         
@@ -102,7 +104,7 @@ class Game:
                 self.scroll[0] = 0
                 if self.player.rect().top < self.scroll[1]:
                     self.scroll[1] -= self.display.get_height()
-                    self.background_idx += 1
+                    self.background_idx = min(2, self.background_idx + 1)
                     self.background = f"background{self.background_idx}"
                 elif self.player.rect().top > self.scroll[1] + self.display.get_height():
                     self.scroll[1] += self.display.get_height()
@@ -249,6 +251,7 @@ class Game:
             for star in self.goal:
                 star_rect = pygame.Rect(star['pos'][0], star['pos'][1], star['size'][0], star['size'][1])
                 if self.player.rect().colliderect(star_rect):
+                    self.final_score = self.timer.get_time()
                     self.show_score()
                     play = False
 
@@ -418,7 +421,6 @@ class Game:
         self.clock.tick(60)
         base_screen = self.screen.copy()
 
-        final_score = self.timer.get_time()
         score_font = pygame.font.Font('data/jump/font/NeoDunggeunmoPro-Regular.ttf', 28)
         score_font.set_bold(True)
         
@@ -435,7 +437,7 @@ class Game:
             overlay.fill((0, 0, 0, 140))
             self.screen.blit(overlay, (0, 0))
 
-            txt = score_font.render(f'Your Score : {final_score}', False, (255, 255, 255))
+            txt = score_font.render(f'Your Score : {self.final_score}', False, (255, 255, 255))
             self.screen.blit(txt, (self.screen.get_rect().centerx - (txt.get_width() // 2), self.screen.get_rect().centery - (txt.get_height() // 2)))
 
             for event in pygame.event.get():

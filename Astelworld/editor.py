@@ -120,10 +120,12 @@ class Editor:
                         self.tilemap.off_grid_tiles.remove(tile)
 
             for portal in self.tilemap.portals:
-                pygame.draw.rect(self.display, (0, 0, 255, 100), pygame.Rect(portal['pos'][0] - render_scroll[0], portal['pos'][1] - render_scroll[1], portal['size'][0], portal['size'][1]))
+                self.display.blit(self.assets['portal'][0], (portal['pos'][0] - render_scroll[0] - 16, portal['pos'][1] - render_scroll[1])) 
+                # pygame.draw.rect(self.display, (0, 0, 255, 100), pygame.Rect(portal['pos'][0] - render_scroll[0], portal['pos'][1] - render_scroll[1], portal['size'][0], portal['size'][1]))
 
             for star in self.tilemap.goal:
-                pygame.draw.rect(self.display, (255, 0, 0, 100), pygame.Rect(star['pos'][0] - render_scroll[0], star['pos'][1] - render_scroll[1], star['size'][0], star['size'][1]))
+                self.display.blit(self.assets['star'][0], (star['pos'][0] - render_scroll[0], star['pos'][1] - render_scroll[1]))
+                # pygame.draw.rect(self.display, (255, 0, 0, 100), pygame.Rect(star['pos'][0] - render_scroll[0], star['pos'][1] - render_scroll[1], star['size'][0], star['size'][1]))
 
 
             self.display.blit(current_tile_img, (5, 5))
