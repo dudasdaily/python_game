@@ -30,6 +30,8 @@ class Game:
             'stone' : load_images('tiles/stone'),
             'player' : load_image('entities/player.png'),
             'background' : load_image('background.png'),
+            'background0' : load_image('background0.png'),
+            'background1' : load_image('background1.png'),
             'player/landing' : Animation(load_images('entities/player/landing'), img_dur=20, loop=True),
             'player/idle' : Animation(load_images('entities/player/idle'), img_dur=20),
             'player/jump' : Animation(load_images('entities/player/jump')),
@@ -57,6 +59,8 @@ class Game:
         self.disappearing_tiles = []
         self.hp_ui = Hp(self, self.player)
 
+        self.background = 'background0'
+
         self.pos_queue = [[100, self.display.get_height() - 30]] # 포탈 타기 전 플레이어의 위치를 저장하는 리스트
         self.load_level(self.level)
         
@@ -65,7 +69,7 @@ class Game:
 
         while play:
             self.clock.tick(60) # 60fps
-            self.display.blit(self.assets['background'], (0, 0))
+            self.display.blit(self.assets[self.background], (0, 0))
             self.screenshake = max(0, self.screenshake - 1)
 
             if self.level != '0' and not len(self.enemies): # 맵의 모든 적을 처치했고, 현재 맵이 0번맵이 아니라면
@@ -96,9 +100,11 @@ class Game:
                 self.scroll[0] = 0
                 if self.player.rect().top < self.scroll[1]:
                     self.scroll[1] -= self.display.get_height()
-                    
+                    self.background = 'background1'
                 elif self.player.rect().top > self.scroll[1] + self.display.get_height():
                     self.scroll[1] += self.display.get_height()
+                    self.background = 'background0'
+
             else:
                 self.scroll[0] += (self.player.rect().centerx - self.display.get_width() / 2 - self.scroll[0]) / 25
                 self.scroll[1] += (self.player.rect().centery - self.display.get_height() / 2 - self.scroll[1]) / 25
