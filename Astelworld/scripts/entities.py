@@ -97,7 +97,7 @@ class Player(PhysicsEntity):
         super().__init__(game, 'player', pos, size)
         self.max_hp = 3
         self.hp = 3
-        self.anim_offset = (-5, 0)
+        self.anim_offset = (-5, -5)
         self.air_time = 0
         self.jump_cnt = 1
         self.is_charging = False
