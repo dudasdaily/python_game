@@ -2,7 +2,7 @@ from ast import List
 import os
 import pygame
 
-BASE_IMG_PATH = 'data/images/'
+BASE_IMG_PATH = 'data/jump/images/'
 
 def load_image(path, colorkey = (0,0,0)):
     img = pygame.image.load(BASE_IMG_PATH + path).convert()

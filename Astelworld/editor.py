@@ -6,6 +6,7 @@ from scripts.tilemap import Tilemap
 
 RENDER_SCALE = 2.0
 MAP_PATH = 'data/maps/2.json'
+MAP_PATH = 'data/jump/maps/0.json'
 
 class Editor:
     def __init__(self):

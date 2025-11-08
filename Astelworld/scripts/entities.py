@@ -4,7 +4,7 @@ import pygame
 import math
 import random
 from pygame.math import Vector2
-from scripts.particle import Particle 
+from scripts.particle import Particle
 from scripts.spark import Spark
 
 class PhysicsEntity:
@@ -92,60 +92,12 @@ class PhysicsEntity:
         self.animation.img().set_alpha(self.alpha)
         surf.blit(pygame.transform.flip(self.animation.img(), self.flip, False), (self.pos[0] - offset[0] + self.anim_offset[0], self.pos[1] - offset[1] + self.anim_offset[1]))
 
-
-class Enemy(PhysicsEntity):
-    def __init__(self, game, pos, size):
-        super().__init__(game, 'slime', pos, size)
-        self.anim_offset = (0, 0)
-        self.walking = 0 # 적이 걷는 시간의 타이머, 0이되면 멈춘다
-
-    def update(self, tilemap, movement=(0, 0, 0, 0)):
-        # 적이 걷고 있을 때
-        if self.walking:
-            if tilemap.solid_check((self.rect().centerx + (-7 if self.flip else 7), self.pos[1] + 23 )):
-                if self.collisions['left'] or self.collisions['right']:
-                    self.flip = not self.flip 
-                else:
-                    movement = [0.5, 0, 0, 0] if self.flip else [0, 0.5, 0, 0]
-            else:
-                self.flip = not self.flip 
-            self.walking = max(0, self.walking - 1) # 여기서 업데이트하기 때문에 바로 밑에서 멈춘 순간 프레임을 포착할 수 있음
-            if not self.walking:
-                dis = (self.game.player.pos[0] - self.pos[0], self.game.player.pos[1] - self.pos[1])
-                if (abs(dis[1]) < 16):
-                    if (self.flip and dis[0] < 0):
-                        self.game.projectiles.append([[self.rect().centerx - 7, self.rect().centery], -1.5, 0])
-                        for i in range(4):
-                            self.game.sparks.append(Spark(self.game.projectiles[-1][0], random.random() - 0.5 + math.pi, 2 + random.random()))
-                    if (not self.flip and dis[0] > 0):
-                        self.game.projectiles.append([[self.rect().centerx + 7, self.rect().centery], 1.5, 0])
-                        for i in range(4):
-                            self.game.sparks.append(Spark(self.game.projectiles[-1][0], random.random() - 0.5, 2 + random.random()))
-
-        # 적이 안걷고 있을 때
-        elif random.random() < 0.01: # 적이 안걷고 있으면, 60fps에서 평균적으로 100프레임당 한번 씩(약 1.67초) 적이 걸을 타이머를 랜덤(30 ~ 119)로 세팅한다!
-            self.walking = random.randint(30, 120)
-        super().update(tilemap, movement=movement)
-        # 적 애니메이션 설정
-        # if movement[0] != 0 or movement[1] != 0:
-        #     self.set_action('run')
-        # else:
-        #     self.set_action('idle')
-
-    def render(self, surf, offset=(0, 0)):
-        super().render(surf, offset=offset)
-
-        if self.flip:
-            surf.blit(pygame.transform.flip(self.game.assets['gun'], True, False), (self.rect().centerx - self.game.assets['gun'].get_width() - offset[0], self.rect().centery - offset[1]))
-        else:
-            surf.blit(self.game.assets['gun'], (self.rect().centerx + 4 - offset[0], self.rect().centery - offset[1]))
-
 class Player(PhysicsEntity):
     def __init__(self, game, pos, size):
         super().__init__(game, 'player', pos, size)
         self.max_hp = 3
         self.hp = 3
-        self.anim_offset = (0, -5)
+        self.anim_offset = (-5, -5)
         self.air_time = 0
         self.jump_cnt = 1
         self.is_charging = False
@@ -158,8 +110,7 @@ class Player(PhysicsEntity):
         self.knockback_timer = 0 # 넉백 유지 시간 선택
         self.knockback_immunity = 0 # 넉백 무적 프레임 (180 프레임)
 
-        self.max_knockback_immunity = 180
-
+        self.max_knockback_immunity = 140
         self.wall_collision_count = 0
 
     def update(self, tilemap, movement=(0,0,0,0)):
@@ -178,7 +129,6 @@ class Player(PhysicsEntity):
         if self.knockback_immunity > 0:
             self.alpha = 125
             self.knockback_immunity -= 1
-
         else:
             self.alpha = 255
 
@@ -188,8 +138,9 @@ class Player(PhysicsEntity):
             
         super().update(tilemap, movement = movement)
 
-        if self.air_time > 300:
-            if not self.game.dead and self.game.level != 0:
+        if self.air_time > 240:
+            if not self.game.dead and self.game.level != '0':
+                self.hp -= 1
                 self.game.screenshake = max(16, self.game.screenshake)
                 self.hp -= 1
 
@@ -201,7 +152,7 @@ class Player(PhysicsEntity):
             pvelocity = [0, random.random() * 3]
             self.game.particles.append(Particle(self.game, 'particle', self.rect().center, velocity=pvelocity, frame=2))
 
-        if self.is_fly and self.collision_normal.length() > 0:
+        if self.is_fly and self.collision_normal.length() > 0 and self.jump_cnt != 1:
             self.wall_collision_count += 1
             restitution = max(0.01, 0.8 - self.wall_collision_count * 0.3)
             self._bounce_by_reflection(restitution=restitution, friction=0.1)
@@ -312,7 +263,7 @@ class Player(PhysicsEntity):
             player.velocity[1] = max(-5, min(5, v_out.y))
             self.game.kill_enemy(enemy)
             
-    def _bounce_by_reflection(self, restitution=0.8, friction=0.5):
+    def _bounce_by_reflection(self, restitution=0.8, friction=0.2):
         """
         restitution(탄성계수): 0(완전 비탄성)~1(완전 탄성)
         friction(마찰): 접선 성분 감쇠율
@@ -433,6 +384,55 @@ class Player(PhysicsEntity):
     def render(self, surf, offset=(0, 0)):
         if not self.is_attacking:
             super().render(surf, offset=offset)
+
+class Enemy(PhysicsEntity):
+    def __init__(self, game, pos, size):
+        super().__init__(game, 'slime', pos, size)
+        self.anim_offset = (0, 0)
+        self.walking = 0 # 적이 걷는 시간의 타이머, 0이되면 멈춘다
+
+    def update(self, tilemap, movement=(0, 0, 0, 0)):
+        # 적이 걷고 있을 때
+        if self.walking:
+            if tilemap.solid_check((self.rect().centerx + (-7 if self.flip else 7), self.pos[1] + 23 )):
+                if self.collisions['left'] or self.collisions['right']:
+                    self.flip = not self.flip 
+                else:
+                    movement = [0.5, 0, 0, 0] if self.flip else [0, 0.5, 0, 0]
+            else:
+                self.flip = not self.flip 
+            self.walking = max(0, self.walking - 1) # 여기서 업데이트하기 때문에 바로 밑에서 멈춘 순간 프레임을 포착할 수 있음
+            if not self.walking:
+                dis = (self.game.player.pos[0] - self.pos[0], self.game.player.pos[1] - self.pos[1])
+                if (abs(dis[1]) < 16):
+                    if (self.flip and dis[0] < 0):
+                        self.game.projectiles.append([[self.rect().centerx - 7, self.rect().centery], -1.5, 0])
+                        for i in range(4):
+                            self.game.sparks.append(Spark(self.game.projectiles[-1][0], random.random() - 0.5 + math.pi, 2 + random.random()))
+                    if (not self.flip and dis[0] > 0):
+                        self.game.projectiles.append([[self.rect().centerx + 7, self.rect().centery], 1.5, 0])
+                        for i in range(4):
+                            self.game.sparks.append(Spark(self.game.projectiles[-1][0], random.random() - 0.5, 2 + random.random()))
+
+        # 적이 안걷고 있을 때
+        elif random.random() < 0.01: # 적이 안걷고 있으면, 60fps에서 평균적으로 100프레임당 한번 씩(약 1.67초) 적이 걸을 타이머를 랜덤(30 ~ 119)로 세팅한다!
+            self.walking = random.randint(30, 120)
+        super().update(tilemap, movement=movement)
+        # 적 애니메이션 설정
+        # if movement[0] != 0 or movement[1] != 0:
+        #     self.set_action('run')
+        # else:
+        #     self.set_action('idle')
+
+    def render(self, surf, offset=(0, 0)):
+        super().render(surf, offset=offset)
+
+        if self.flip:
+            surf.blit(pygame.transform.flip(self.game.assets['gun'], True, False), (self.rect().centerx - self.game.assets['gun'].get_width() - offset[0], self.rect().centery - offset[1]))
+        else:
+            surf.blit(self.game.assets['gun'], (self.rect().centerx + 4 - offset[0], self.rect().centery - offset[1]))
+
+
 
 class Portal:
     def __init__(self, game, pos, size):
