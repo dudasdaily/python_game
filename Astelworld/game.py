@@ -46,7 +46,7 @@ class Game:
             'gun' : load_image('gun.png'),
             'projectile' : load_image('projectile.png'),
         }
-        self.player = Player(self, (50, 50), (22, 27))
+        self.player = Player(self, (50, 50), (22, 32))
         self.movement = [0, 0, 0, 0]
         self.tilemap = Tilemap(self, tile_size = 16)
         self.level = '0'
@@ -97,7 +97,8 @@ class Game:
                 self.scroll[0] = 0
                 if self.player.rect().top < self.scroll[1]:
                     self.scroll[1] -= self.display.get_height()
-                if self.player.rect().bottom > self.scroll[1] + self.display.get_height():
+                    
+                elif self.player.rect().top > self.scroll[1] + self.display.get_height():
                     self.scroll[1] += self.display.get_height()
             else:
                 self.scroll[0] += (self.player.rect().centerx - self.display.get_width() / 2 - self.scroll[0]) / 25
@@ -276,7 +277,7 @@ class Game:
                     self.particles.remove(particle)
 
             # 플레이어 히트박스 표시
-            # self.show_hitbox(self.player, render_scroll)
+            self.show_hitbox(self.player, render_scroll)
 
             if self.transition:
                 transition_surf = pygame.Surface(self.display.get_size())

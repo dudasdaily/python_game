@@ -97,7 +97,7 @@ class Player(PhysicsEntity):
         super().__init__(game, 'player', pos, size)
         self.max_hp = 3
         self.hp = 3
-        self.anim_offset = (-5, -5)
+        self.anim_offset = (-5, 0)
         self.air_time = 0
         self.jump_cnt = 1
         self.is_charging = False
@@ -138,7 +138,7 @@ class Player(PhysicsEntity):
             
         super().update(tilemap, movement = movement)
 
-        if self.air_time > 240:
+        if self.air_time > 180:
             if not self.game.dead and self.game.level != '0':
                 self.game.screenshake = max(16, self.game.screenshake)
                 self.hp -= 1
