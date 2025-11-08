@@ -114,6 +114,9 @@ class Player(PhysicsEntity):
         self.wall_collision_count = 0
 
     def update(self, tilemap, movement=(0,0,0,0)):
+        if self.charge:
+            self.charge += 1
+
         if self.factor != 0:
             movement = self.last_movement
 
@@ -202,19 +205,23 @@ class Player(PhysicsEntity):
     def jump(self):
         if self.is_charging:
             self.is_charging = False
-            if 0 <= self.charge < 500:
+            # 0.5초
+            if 0 <= self.charge < 30:
                 self.factor = 1
                 self.velocity[0] = 3
                 self.velocity[1] = -1.5
-
-            if 500 <= self.charge < 1000:
+            # 1초
+            if 30 <= self.charge < 60:
                 self.factor = 2
                 self.velocity[0] = 3
                 self.velocity[1] = -3
-            if self.charge >= 1000:
+            # 1초 이상
+            if self.charge >= 60:
                 self.factor = 3
                 self.velocity[0] = 3
                 self.velocity[1] = -5
+
+            self.charge = 0
                 
 
             # self.velocity[0] = self.factor
@@ -222,6 +229,7 @@ class Player(PhysicsEntity):
 
     def jump_attack(self):
         self.is_attacking = True
+        self.charge = 0
         self.last_movement = [0, 0, 0, 0]
         self.velocity[1] = 20
 
@@ -431,17 +439,36 @@ class Enemy(PhysicsEntity):
         else:
             surf.blit(self.game.assets['gun'], (self.rect().centerx + 4 - offset[0], self.rect().centery - offset[1]))
 
-
-
-class Portal:
-    def __init__(self, game, pos, size):
+class VisualEntity:
+    def __init__(self, game, pos, size, anim_path):
         self.game = game
         self.pos = pos
         self.size = size
-        self.animation = self.game.assets['portal/idle'].copy()
+        self.animation = self.game.assets[anim_path].copy()
 
     def update(self):
         self.animation.update()
 
     def render(self, surf, offset=(0, 0)):
         surf.blit(self.animation.img(), (self.pos[0] - offset[0], self.pos[1] - offset[1]))
+
+class Portal(VisualEntity):
+    def __init__(self, game, pos, size, destination):
+        self.destination = destination
+        super().__init__(game, pos, size, 'portal/idle')
+
+    def update(self):
+        super().update()
+
+    def render(self, surf, offset=(0, 0)):
+        super().render(surf, offset)
+
+class Star(VisualEntity):
+    def __init__(self, game, pos, size):
+        super().__init__(game, pos, size, 'star/idle')
+
+    def update(self):
+        super().update()
+
+    def render(self, surf, offset=(0, 0)):
+        super().render(surf, offset)

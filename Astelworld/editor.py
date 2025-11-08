@@ -14,13 +14,14 @@ class Editor:
         self.display = pygame.Surface((320, 240))
         self.assets = {
             'snow' : load_images('tiles/snow'),
-            'decor' : load_images('tiles/decor'), 
             'grass' : load_images('tiles/grass'),
+            'meteor' : load_images('tiles/meteor'),
+            'decor' : load_images('tiles/decor'), 
             'large_decor' : load_images('tiles/large_decor'),
             'stone' : load_images('tiles/stone'),
             'spawners' : load_images('tiles/spawners'),
-            # 'portal_hitbox' : load_images(''),
             'portal' : load_images('tiles/portal', (255, 255, 255)),
+            'star' : load_images('tiles/star'),
         }
 
         self.movement = [0, 0, 0, 0] # 좌, 우, 상, 하
@@ -43,12 +44,14 @@ class Editor:
         self.shift = False
         self.ongrid = True
         self.portal_mode = False
+        self.star_mode = False
 
         self.clear_mode = False
         self.clear_required_value = 0
         self.portal_dest_value = 0
         self.font = pygame.font.SysFont("Arial", 14)
         self.portal_font = pygame.font.SysFont("Arial", 14)
+        self.star_font = pygame.font.SysFont("Arial", 14)
 
     def run(self):
         while True:
@@ -72,12 +75,22 @@ class Editor:
             if self.portal_mode:
                 font_surf = self.portal_font.render(f'Destination: {self.portal_dest_value}', True, (0, 255, 0))
                 self.display.blit(font_surf, (self.display.get_width() - font_surf.get_width() - 5, self.display.get_height() - 20))
-                pygame.draw.rect(self.display, (0, 255, 0, 100), pygame.Rect(mpos[0] - 8, mpos[1] - 8, 16, 16))
+                pygame.draw.rect(self.display, (0, 255, 0, 100), pygame.Rect(mpos[0] - 8, mpos[1] - 8, 16, 32))
                 if self.right_clicking:
                     for portal in self.tilemap.portals.copy():
-                        portal_rect = pygame.Rect(portal['pos'][0], portal['pos'][1], portal['size'][0], portal['size'][1] * 2)
+                        portal_rect = pygame.Rect(portal['pos'][0], portal['pos'][1], portal['size'][0], portal['size'][1])
                         if portal_rect.collidepoint((mpos[0] + self.scroll[0], mpos[1] + self.scroll[1])):
                             self.tilemap.portals.remove(portal)
+
+            elif self.star_mode:
+                font_surf = self.star_font.render('Star toggle On!', False, (0, 255, 0))
+                self.display.blit(font_surf, (self.display.get_width() - font_surf.get_width() - 5, self.display.get_height() - 40))
+                pygame.draw.rect(self.display, (0, 255, 0, 100), pygame.Rect(mpos[0] - 8, mpos[1] - 8, 32, 32))
+                if self.right_clicking:
+                    for star in self.tilemap.goal.copy():
+                        star_rect = pygame.Rect(star['pos'][0], star['pos'][1], star['size'][0], star['size'][1])
+                        if star_rect.collidepoint((mpos[0] + self.scroll[0], mpos[1] + self.scroll[1])):
+                            self.tilemap.goal.remove(star)         
 
             else:
                 # 마우스의 타일 좌표
@@ -109,6 +122,9 @@ class Editor:
             for portal in self.tilemap.portals:
                 pygame.draw.rect(self.display, (0, 0, 255, 100), pygame.Rect(portal['pos'][0] - render_scroll[0], portal['pos'][1] - render_scroll[1], portal['size'][0], portal['size'][1]))
 
+            for star in self.tilemap.goal:
+                pygame.draw.rect(self.display, (255, 0, 0, 100), pygame.Rect(star['pos'][0] - render_scroll[0], star['pos'][1] - render_scroll[1], star['size'][0], star['size'][1]))
+
 
             self.display.blit(current_tile_img, (5, 5))
 
@@ -116,7 +132,7 @@ class Editor:
                 font_surf = self.font.render(f'Clear Required: {self.clear_required_value}', True, (255, 255, 255))
                 self.display.blit(font_surf, (self.display.get_width() - font_surf.get_width() - 5, 5))
                 
-
+            # 외부 입력 감지
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -127,6 +143,8 @@ class Editor:
                         self.clicking = True
                         if self.portal_mode:
                             self.tilemap.portals.append({'pos' : (mpos[0] + self.scroll[0] - 8, mpos[1] + self.scroll[1] - 8), 'size' : [16, 32], 'destination' : self.portal_dest_value})
+                        elif self.star_mode:
+                            self.tilemap.goal.append({'pos' : (mpos[0] + self.scroll[0] - 8, mpos[1] + self.scroll[1] - 8), 'size' : [32, 32]})
                         elif not self.ongrid:
                             self.tilemap.off_grid_tiles.append({'type' : self.tile_list[self.tile_group], 'variant' : self.tile_variant, 'pos' : (mpos[0] + self.scroll[0], mpos[1] + self.scroll[1])})
 
@@ -153,6 +171,8 @@ class Editor:
                         self.right_clicking = False
 
                 if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_l:
+                        self.star_mode = not self.star_mode
                     if event.key == pygame.K_a:
                         self.movement[0] = -1
                     if event.key == pygame.K_d:

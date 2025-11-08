@@ -15,7 +15,7 @@ AUTOTILE_MAP = {
 AUTOTILE_TYPES = {'grass', 'stone'}
 
 NEIGHBOR_OFFSET = [(-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (0, 0), (-1, 1), (0, 1), (1, 1)]
-PHYSICS_TILES = {'grass', 'stone'}
+PHYSICS_TILES = {'grass', 'stone', 'meteor', 'snow'}
 
 class Tilemap:
     def __init__(self, game, tile_size = 16):
@@ -24,6 +24,14 @@ class Tilemap:
         self.tile_map = {} # tile_map = {'grass' : {}, ... } ,tile_map['grass'] = { 'type' : 'grass', 'variant' : 0, 'pos' : (xpos, ypos)}
         self.off_grid_tiles = []
         self.portals = []
+        self.goal = []
+
+        # self.game.assets['snow'][0].set_alpha(0)
+        def funcname(parameter_list):
+            """
+            docstring
+            """
+            pass
         
     def physics_rects_in_region(self, rect):
         """
@@ -75,7 +83,7 @@ class Tilemap:
     def save(self, path):
         print("saved!")
         f = open(path, 'w')
-        json.dump({'tilemap' : self.tile_map, 'tile_size' : self.tile_size, 'offgrid' : self.off_grid_tiles, 'portals' : self.portals}, f)
+        json.dump({'tilemap' : self.tile_map, 'tile_size' : self.tile_size, 'offgrid' : self.off_grid_tiles, 'portals' : self.portals, 'goal' : self.goal}, f)
         f.close()
 
     def load(self, path, cleared_maps=set()):
@@ -99,6 +107,7 @@ class Tilemap:
         self.tile_size = map_data.get('tile_size', self.tile_size)
         self.off_grid_tiles = map_data.get('offgrid', [])
         self.portals = map_data.get('portals', [])
+        self.goal = map_data.get('goal', [])
 
         return newly_removed_tiles
 

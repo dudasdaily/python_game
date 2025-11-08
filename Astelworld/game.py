@@ -4,7 +4,7 @@ import pygame
 import random
 import sys
 
-from scripts.entities import PhysicsEntity, Player, Enemy, Portal
+from scripts.entities import PhysicsEntity, Player, Enemy, Portal, Star
 from scripts.utils import load_image, load_images, Animation
 from scripts.tilemap import Tilemap
 from scripts.particle import Particle
@@ -28,10 +28,11 @@ class Game:
             'grass' : load_images('tiles/grass'),
             'large_decor' : load_images('tiles/large_decor'),
             'stone' : load_images('tiles/stone'),
+            'meteor' : load_images('tiles/meteor'),
             'player' : load_image('entities/player.png'),
-            'background' : load_image('background.png'),
             'background0' : load_image('background0.png'),
             'background1' : load_image('background1.png'),
+            'background2' : load_image('background2.png'),
             'player/landing' : Animation(load_images('entities/player/landing'), img_dur=20, loop=True),
             'player/idle' : Animation(load_images('entities/player/idle'), img_dur=20),
             'player/jump' : Animation(load_images('entities/player/jump')),
@@ -40,6 +41,7 @@ class Game:
             'player/fall' : Animation(load_images('entities/player/fall')),
             'slime/idle' : Animation(load_images('entities/slime/idle'), img_dur=12),
             'portal/idle' : Animation(load_images('tiles/portal', (255, 255, 255)), img_dur=12),
+            'star/idle' : Animation(load_images('tiles/star'), img_dur=12),
             'enemy/idle' : Animation(load_images('entities/enemy/idle'), img_dur=6),
             'enemy/run' : Animation(load_images('entities/enemy/run'), img_dur=6),
             'particle/leaf' : Animation(load_images('particles/leaf'), img_dur=20, loop=False),
@@ -54,12 +56,12 @@ class Game:
         self.level = '0'
         self.cleared_maps = set()
         self.screenshake = 0
-        self.portals = []
         self.visual_portals = []
         self.disappearing_tiles = []
         self.hp_ui = Hp(self, self.player)
 
         self.background = 'background0'
+        self.background_idx = 0
 
         self.pos_queue = [[100, self.display.get_height() - 30]] # 포탈 타기 전 플레이어의 위치를 저장하는 리스트
         self.load_level(self.level)
@@ -100,10 +102,12 @@ class Game:
                 self.scroll[0] = 0
                 if self.player.rect().top < self.scroll[1]:
                     self.scroll[1] -= self.display.get_height()
-                    self.background = 'background1'
+                    self.background_idx += 1
+                    self.background = f"background{self.background_idx}"
                 elif self.player.rect().top > self.scroll[1] + self.display.get_height():
                     self.scroll[1] += self.display.get_height()
-                    self.background = 'background0'
+                    self.background_idx = max(0, self.background_idx - 1)
+                    self.background = f"background{self.background_idx}"
 
             else:
                 self.scroll[0] += (self.player.rect().centerx - self.display.get_width() / 2 - self.scroll[0]) / 25
@@ -141,9 +145,8 @@ class Game:
                             self.player.last_movement = [0, 1, 0, 0]
                     
                     if event.key == pygame.K_SPACE:
-                        self.player.charge = pygame.time.get_ticks()
-
                         if self.player.jump_cnt and not self.player.is_fly:
+                            self.player.charge += 1
                             self.player.is_charging = True
                             self.player.jump_cnt -= 1
                             self.movement = [0, 0, 0, 0]
@@ -158,7 +161,8 @@ class Game:
                     if event.key == pygame.K_RIGHT:
                         self.movement[1] = 0
                     if event.key == pygame.K_SPACE:
-                        self.player.charge = pygame.time.get_ticks() - self.player.charge - self.paused_time
+                         
+                        # self.player.charge = pygame.time.get_ticks() - self.player.charge - self.paused_time
                         self.player.jump()
 
 
@@ -180,9 +184,19 @@ class Game:
                 self.display.blit(tile_img, (tile['pos'][0] * self.tilemap.tile_size - render_scroll[0], tile['pos'][1] * self.tilemap.tile_size - render_scroll[1]))
             self.disappearing_tiles = [t for t in self.disappearing_tiles if t[1] > 0]
 
-            for portal in self.visual_portals:
+            # 포탈 애니메이션 렌더링
+            for portal in self.visual_portals.copy():
                 portal.update()
-                portal.render(self.display, (render_scroll[0] + 20, render_scroll[1] + 20))
+                x_offset = 16
+
+                if str(portal.destination) in self.cleared_maps:
+                    self.visual_portals.remove(portal)
+
+                portal.render(self.display, (render_scroll[0] + x_offset, render_scroll[1]))
+
+            for star in self.visual_goal.copy():
+                star.update()
+                star.render(self.display, (render_scroll[0], render_scroll[1]))
 
             for enemy in self.enemies.copy():
                 kill = enemy.update(self.tilemap, (0, 0))
@@ -231,6 +245,13 @@ class Game:
                     self.level = str(portal['destination'])
                     self.load_level(self.level)
 
+            # 목적지 충돌 감지
+            for star in self.goal:
+                star_rect = pygame.Rect(star['pos'][0], star['pos'][1], star['size'][0], star['size'][1])
+                if self.player.rect().colliderect(star_rect):
+                    self.show_score()
+                    play = False
+
             # 총알
             # projectile[] = [[x, y], direction, timer]
             for projectile in self.projectiles.copy():
@@ -274,7 +295,7 @@ class Game:
                     self.particles.remove(particle)
 
             # 플레이어 히트박스 표시
-            self.show_hitbox(self.player, render_scroll)
+            # self.show_hitbox(self.player, render_scroll)
 
             if self.transition:
                 transition_surf = pygame.Surface(self.display.get_size())
@@ -328,9 +349,15 @@ class Game:
         self.transition = -30
 
         self.portals = self.tilemap.portals
+        self.goal = self.tilemap.goal
         self.visual_portals = []
+        self.visual_goal = []
+    
         for portal in self.portals:
-            self.visual_portals.append(Portal(self, portal['pos'], portal['size']))
+            self.visual_portals.append(Portal(self, portal['pos'], portal['size'], destination=portal['destination']))
+
+        for star in self.goal:
+            self.visual_goal.append(Star(self, star['pos'], star['size']))
 
     def kill_enemy(self, enemy):
         """적을 죽이고 파티클 생성"""
@@ -351,7 +378,6 @@ class Game:
         pause_time = pygame.time.get_ticks()
 
         while running:
-            # self.display.fill((0, 0, 0))
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
@@ -376,15 +402,47 @@ class Game:
         self.paused_time += resume_time - pause_time
 
         if self.player.is_charging:
+            self.player.factor = 0
             self.player.is_charging = False
             self.player.jump_cnt = 1
             self.player.last_movement = [0,0,0,0]
-
+            self.player.charge = 0
 
     def show_hitbox(self, entity : Entity, offset=(0, 0)):
         rectangle = entity.rect()
         rectangle.x -= offset[0]
         rectangle.y -= offset[1]
         pygame.draw.rect(self.display, (0, 0, 0), rectangle, 2)
+
+    def show_score(self):
+        self.clock.tick(60)
+        base_screen = self.screen.copy()
+
+        final_score = self.timer.get_time()
+        score_font = pygame.font.Font('data/jump/font/NeoDunggeunmoPro-Regular.ttf', 28)
+        score_font.set_bold(True)
+        
+        # box = pygame.Rect(0, 0, 120, 200)
+        # font_surf = score_font.render(f'Your Score : {self.timer.get_time()}', False, (255, 255, 255))
+        # pygame.draw.rect(self.screen, (240, 240, 240), box, border_radius=12) 
+        # self.screen.blit(font_surf, (self.display.get_rect().centerx - 20, self.display.get_rect().centery - 20))
+
+        running = True
+        while running:
+            self.screen.blit(base_screen, (0, 0))
+
+            overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
+            overlay.fill((0, 0, 0, 140))
+            self.screen.blit(overlay, (0, 0))
+
+            txt = score_font.render(f'Your Score : {final_score}', False, (255, 255, 255))
+            self.screen.blit(txt, (self.screen.get_rect().centerx - (txt.get_width() // 2), self.screen.get_rect().centery - (txt.get_height() // 2)))
+
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        running = False
+
+            pygame.display.update()
 
 Game().run()
