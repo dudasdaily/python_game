@@ -163,6 +163,13 @@ class Game:
                         self.player.charge = pygame.time.get_ticks() - self.player.charge
                         self.player.jump()
 
+
+            keys = pygame.key.get_pressed()
+            if not keys[pygame.K_LEFT] and not keys[pygame.K_RIGHT] and not self.player.is_fly:
+                if self.player.is_charging:
+                    self.player.last_movement = [0, 0, 0, 0]
+                
+
             # 타일 맵 랜더링
             self.tilemap.render(self.display, render_scroll)
 
@@ -369,6 +376,12 @@ class Game:
 
         resume_time = pygame.time.get_ticks()
         self.paused_time += resume_time - pause_time
+
+        if self.player.is_charging:
+            self.player.is_charging = False
+            self.player.jump_cnt = 1
+            self.player.last_movement = [0,0,0,0]
+
 
     def show_hitbox(self, entity : Entity, offset=(0, 0)):
         rectangle = entity.rect()
