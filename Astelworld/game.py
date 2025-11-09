@@ -46,7 +46,8 @@ class Game:
             'enemy/run' : Animation(load_images('entities/enemy/run'), img_dur=6),
             'particle/leaf' : Animation(load_images('particles/leaf'), img_dur=20, loop=False),
             'particle/particle' : Animation(load_images('particles/particle'), img_dur=5, loop=False),
-            'particle/burst' : Animation(load_images('particles/particle'), img_dur=20, loop=False),
+            'particle/player_particle' : Animation(load_images('particles/player_particle'), img_dur=5, loop=False),
+            'particle/burst' : Animation(load_images('particles/player_particle'), img_dur=20, loop=False),
             'gun' : load_image('gun.png'),
             'projectile' : load_image('projectile.png'),
         }
@@ -134,6 +135,9 @@ class Game:
                         self.movement = [0, 0, 0, 0]
                         self.ingame_menu()
 
+                    if event.key == pygame.K_p:
+                        print(self.player.pos)
+
                     if event.key == pygame.K_LEFT and not self.player.is_fly:
                         if not self.player.is_charging:
                             self.movement[0] = 1
@@ -179,12 +183,16 @@ class Game:
 
             # 사라지는 타일 애니메이션
             for i, (tile, timer) in enumerate(self.disappearing_tiles):
-                self.disappearing_tiles[i][1] = max(0, timer - 1)
+                self.disappearing_tiles[i][1] = max(0, timer - 1) # 타이머 감소
                 tile_img = self.assets[tile['type']][tile['variant']].copy()
-                alpha = int(255 * (timer / 20))
+                alpha = int(255 * (timer / 100))
+                # if 10 < timer < 60:
+                #     alpha = 125
+                # if timer <= 10:
+                #     alpha = 0
                 tile_img.set_alpha(alpha)
                 self.display.blit(tile_img, (tile['pos'][0] * self.tilemap.tile_size - render_scroll[0], tile['pos'][1] * self.tilemap.tile_size - render_scroll[1]))
-            self.disappearing_tiles = [t for t in self.disappearing_tiles if t[1] > 0]
+            self.disappearing_tiles = [t for t in self.disappearing_tiles if t[1] > 0] # 타이머가 0인 타일은 제거
 
             # 포탈 애니메이션 렌더링
             for portal in self.visual_portals.copy():
@@ -319,7 +327,7 @@ class Game:
                     is_animating = True
                     break
             if not is_animating:
-                self.disappearing_tiles.append([tile, 100])
+                self.disappearing_tiles.append([tile, 120]) # [tile, timer]
 
         self.level = map_id
         # 파티클
@@ -423,11 +431,6 @@ class Game:
 
         score_font = pygame.font.Font('data/jump/font/NeoDunggeunmoPro-Regular.ttf', 28)
         score_font.set_bold(True)
-        
-        # box = pygame.Rect(0, 0, 120, 200)
-        # font_surf = score_font.render(f'Your Score : {self.timer.get_time()}', False, (255, 255, 255))
-        # pygame.draw.rect(self.screen, (240, 240, 240), box, border_radius=12) 
-        # self.screen.blit(font_surf, (self.display.get_rect().centerx - 20, self.display.get_rect().centery - 20))
 
         running = True
         while running:

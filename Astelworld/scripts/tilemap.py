@@ -25,13 +25,6 @@ class Tilemap:
         self.off_grid_tiles = []
         self.portals = []
         self.goal = []
-
-        # self.game.assets['snow'][0].set_alpha(0)
-        def funcname(parameter_list):
-            """
-            docstring
-            """
-            pass
         
     def physics_rects_in_region(self, rect):
         """
@@ -94,11 +87,11 @@ class Tilemap:
         newly_removed_tiles = []
         self.tile_map = {}
         if 'tilemap' in map_data:
-            """
-            loc : "0;0"
-            tile : {"type": "stone", "variant": 0, "pos": [18,0], "clear_required": "1"}
-            """
             for loc, tile in map_data['tilemap'].items():
+                """
+                loc : "0;0"
+                tile : {"type": "stone", "variant": 0, "pos": [18,0], "clear_required": "1"}
+                """
                 if tile.get('clear_required') in cleared_maps:
                     newly_removed_tiles.append(tile)
                 else:

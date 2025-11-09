@@ -145,14 +145,24 @@ class Player(PhysicsEntity):
             if not self.game.dead and self.game.level != '0':
                 self.game.screenshake = max(16, self.game.screenshake)
                 self.hp -= 1
+                self.air_time = 0
 
-                if self.hp > 0:
-                    self.game.load_level(self.game.level)
+                if self.hp <= 0:
+                    pass
+
+                elif self.game.level == '1':
+                    self.pos = [346.5, 133]
+
+                elif self.game.level == '2':
+                    self.pos = [305.0, 133]
+
+
+                
 
 
         if (self.is_attacking):
             pvelocity = [0, random.random() * 3]
-            self.game.particles.append(Particle(self.game, 'particle', self.rect().center, velocity=pvelocity, frame=2))
+            self.game.particles.append(Particle(self.game, 'player_particle', self.rect().center, velocity=pvelocity, frame=2))
 
         if self.is_fly and self.collision_normal.length() > 0 and self.jump_cnt != 1:
             self.wall_collision_count += 1
