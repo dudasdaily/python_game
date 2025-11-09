@@ -469,8 +469,8 @@ class Portal(VisualEntity):
         super().render(surf, offset)
 
 class Star(VisualEntity):
-    def __init__(self, game, pos, size):
-        super().__init__(game, pos, (size[0] - 24, size[1] - 24), 'star/idle')
+    def __init__(self, game, pos, size, pos_offset=(0, 0)):
+        super().__init__(game, (pos[0] + pos_offset[0], pos[1] + pos_offset[1]), (size[0] - pos_offset[0], size[1] - pos_offset[1]), 'star/idle')
 
     def update(self):
         super().update()

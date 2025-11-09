@@ -137,7 +137,7 @@ class Game:
 
                     if event.key == pygame.K_p:
                         print(self.player.pos)
-                        self.player.pos = [94.0, -395]
+                        self.player.pos = [105, -360]
 
                     if event.key == pygame.K_LEFT and not self.player.is_fly:
                         if not self.player.is_charging:
@@ -207,8 +207,8 @@ class Game:
 
             for star in self.visual_goal.copy():
                 star.update()
-                star.render(self.display, (render_scroll[0], render_scroll[1]))
-                self.show_hitbox(star, render_scroll)
+                star.render(self.display, (render_scroll[0] + 8, render_scroll[1] + 16))
+                # self.show_hitbox(star, render_scroll)
 
 
             for enemy in self.enemies.copy():
@@ -259,8 +259,8 @@ class Game:
                     self.load_level(self.level)
 
             # 목적지 충돌 감지
-            for star in self.goal:
-                star_rect = pygame.Rect(star['pos'][0], star['pos'][1], star['size'][0], star['size'][1])
+            for star in self.visual_goal:
+                star_rect = pygame.Rect(star.pos[0], star.pos[1], star.size[0], star.size[1])
                 if self.player.rect().colliderect(star_rect):
                     self.final_score = self.timer.get_time()
                     self.show_score()
@@ -371,7 +371,7 @@ class Game:
             self.visual_portals.append(Portal(self, portal['pos'], portal['size'], destination=portal['destination']))
 
         for star in self.goal:
-            self.visual_goal.append(Star(self, star['pos'], star['size']))
+            self.visual_goal.append(Star(self, star['pos'], star['size'], pos_offset=(16, 16)))
 
     def kill_enemy(self, enemy):
         """적을 죽이고 파티클 생성"""
