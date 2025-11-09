@@ -398,15 +398,39 @@ class Player(PhysicsEntity):
             super().render(surf, offset=offset)
 
 class Enemy(PhysicsEntity):
-    def __init__(self, game, pos, size):
-        super().__init__(game, 'slime', pos, size)
+    def __init__(self, game, pos, size, e_type):
+        super().__init__(game, e_type, pos, size)
         self.anim_offset = (0, 0)
         self.walking = 0 # 적이 걷는 시간의 타이머, 0이되면 멈춘다
 
+    def update(self):
+        # 적이 안걷고 있을 때
+        if random.random() < 0.01 and not self.walking: # 적이 안걷고 있으면, 60fps에서 평균적으로 100프레임당 한번 씩(약 1.67초) 적이 걸을 타이머를 랜덤(30 ~ 119)로 세팅한다!
+            self.walking = random.randint(30, 120)
+        # super().update(tilemap, movement=movement)
+        # 적 애니메이션 설정
+        # if movement[0] != 0 or movement[1] != 0:
+        #     self.set_action('run')
+        # else:
+        #     self.set_action('idle')
+
+    def render(self, surf, offset=(0, 0)):
+        super().render(surf, offset=offset)
+
+        # if self.flip:
+        #     surf.blit(pygame.transform.flip(self.game.assets['gun'], True, False), (self.rect().centerx - self.game.assets['gun'].get_width() - offset[0], self.rect().centery - offset[1]))
+        # else:
+        #     surf.blit(self.game.assets['gun'], (self.rect().centerx + 4 - offset[0], self.rect().centery - offset[1]))
+
+class Slime(Enemy):
+    def __init__(self, game, pos, size):
+        super().__init__(game, pos, size, 'slime')
+
     def update(self, tilemap, movement=(0, 0, 0, 0)):
+        super().update()
         # 적이 걷고 있을 때
         if self.walking:
-            if tilemap.solid_check((self.rect().centerx + (-7 if self.flip else 7), self.pos[1] + 23 )):
+            if tilemap.solid_check((self.rect().centerx + (-(self.size[0] // 2) if self.flip else self.size[0] // 2), self.pos[1] + self.size[1] + 5 )):
                 if self.collisions['left'] or self.collisions['right']:
                     self.flip = not self.flip 
                 else:
@@ -425,24 +449,22 @@ class Enemy(PhysicsEntity):
                         self.game.projectiles.append([[self.rect().centerx + 7, self.rect().centery], 1.5, 0])
                         for i in range(4):
                             self.game.sparks.append(Spark(self.game.projectiles[-1][0], random.random() - 0.5, 2 + random.random()))
-
-        # 적이 안걷고 있을 때
-        elif random.random() < 0.01: # 적이 안걷고 있으면, 60fps에서 평균적으로 100프레임당 한번 씩(약 1.67초) 적이 걸을 타이머를 랜덤(30 ~ 119)로 세팅한다!
-            self.walking = random.randint(30, 120)
-        super().update(tilemap, movement=movement)
-        # 적 애니메이션 설정
-        # if movement[0] != 0 or movement[1] != 0:
-        #     self.set_action('run')
-        # else:
-        #     self.set_action('idle')
+        PhysicsEntity.update(self, tilemap, movement)
 
     def render(self, surf, offset=(0, 0)):
         super().render(surf, offset=offset)
 
-        # if self.flip:
-        #     surf.blit(pygame.transform.flip(self.game.assets['gun'], True, False), (self.rect().centerx - self.game.assets['gun'].get_width() - offset[0], self.rect().centery - offset[1]))
-        # else:
-        #     surf.blit(self.game.assets['gun'], (self.rect().centerx + 4 - offset[0], self.rect().centery - offset[1]))
+class Eyeball(Enemy):
+    def __init__(self, game, pos, size):
+        super().__init__(game, pos, size, 'eyeball')
+
+    def update(self, tilemap, movement=(0, 0, 0, 0)):
+        super().update()
+        PhysicsEntity.update(self, tilemap, movement)
+
+    def render(self, surf, offset=(0, 0)):
+        super().render(surf, offset=offset)
+    
 
 class VisualEntity:
     def __init__(self, game, pos, size, anim_path):
@@ -481,3 +503,4 @@ class Star(VisualEntity):
 
     def rect(self):
         return pygame.Rect(self.pos[0], self.pos[1], self.size[0], self.size[1])
+    

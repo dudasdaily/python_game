@@ -4,7 +4,7 @@ import pygame
 import random
 import sys
 
-from scripts.entities import PhysicsEntity, Player, Enemy, Portal, Star
+from scripts.entities import Eyeball, PhysicsEntity, Player, Slime, Portal, Star
 from scripts.utils import load_image, load_images, Animation
 from scripts.tilemap import Tilemap
 from scripts.particle import Particle
@@ -40,10 +40,9 @@ class Game:
             'player/charging' : Animation(load_images('entities/player/charging')),
             'player/fall' : Animation(load_images('entities/player/fall')),
             'slime/idle' : Animation(load_images('entities/slime/idle'), img_dur=12),
+            'eyeball/idle' : Animation(load_images('entities/eyeball/idle'), img_dur=12),
             'portal/idle' : Animation(load_images('tiles/portal', (255, 255, 255)), img_dur=12),
             'star/idle' : Animation(load_images('tiles/star'), img_dur=12),
-            'enemy/idle' : Animation(load_images('entities/enemy/idle'), img_dur=6),
-            'enemy/run' : Animation(load_images('entities/enemy/run'), img_dur=6),
             'particle/leaf' : Animation(load_images('particles/leaf'), img_dur=20, loop=False),
             'particle/particle' : Animation(load_images('particles/particle'), img_dur=5, loop=False),
             'particle/player_particle' : Animation(load_images('particles/player_particle'), img_dur=5, loop=False),
@@ -343,8 +342,11 @@ class Game:
         for spawner in self.tilemap.extract([('spawners', 0), ('spawners', 1)], keep=False):
             if spawner['variant'] == 0 and self.level != '0':
                 self.player.pos = spawner['pos']
-            else:
-                self.enemies.append(Enemy(self, spawner['pos'], (20, 15)))
+            elif spawner['variant'] == 1 and self.level != '0':
+                self.enemies.append(Slime(self, spawner['pos'], (20, 15)))
+            elif spawner['variant'] == 2 and self.level != '0':
+                self.enemies.append(Eyeball(self, spawner['pos'], (32, 32)))
+            
 
         if self.level == '0':
             if not len(self.pos_queue):
