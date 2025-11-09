@@ -26,15 +26,6 @@ class PhysicsEntity:
         self.flip = False
         self.is_fly = False
         self.set_action('idle')
-
-    def rect(self):
-        return pygame.Rect(self.pos[0], self.pos[1], self.size[0], self.size[1])
-    
-    def set_action(self, action):
-        if action != self.action: # 이거 안해주면 애니메이션 frame이 0으로 계속 새로 생성되어서 재생 안할거임
-            self.action = action
-            self.animation = self.game.assets[self.type + '/' + self.action].copy()
-
     
     def update(self, tilemap, movement=(0,0,0,0)):
         self.collisions = { 'up' : False, 'down' : False, 'right' : False, 'left' : False }
@@ -91,6 +82,14 @@ class PhysicsEntity:
     def render(self, surf, offset = (0, 0)):
         self.animation.img().set_alpha(self.alpha)
         surf.blit(pygame.transform.flip(self.animation.img(), self.flip, False), (self.pos[0] - offset[0] + self.anim_offset[0], self.pos[1] - offset[1] + self.anim_offset[1]))
+    
+    def rect(self):
+        return pygame.Rect(self.pos[0], self.pos[1], self.size[0], self.size[1])
+    
+    def set_action(self, action):
+        if action != self.action: # 이거 안해주면 애니메이션 frame이 0으로 계속 새로 생성되어서 재생 안할거임
+            self.action = action
+            self.animation = self.game.assets[self.type + '/' + self.action].copy()
 
 class Player(PhysicsEntity):
     def __init__(self, game, pos, size):
@@ -155,10 +154,6 @@ class Player(PhysicsEntity):
 
                 elif self.game.level == '2':
                     self.pos = [305.0, 133]
-
-
-                
-
 
         if (self.is_attacking):
             pvelocity = [0, random.random() * 3]
@@ -298,7 +293,7 @@ class Player(PhysicsEntity):
         # 엔진의 내부 표현에 맞춰 재설정
         # 1) 수평 속도/방향
         if abs(v_out.x) < 0.05:
-            # 거의 수직이라면 좌/우 입력을 해제
+            # 거의 수평으로 충돌했으면 좌/우 입력을 해제
             self.last_movement = [0, 0, 0, 0]
             self.velocity[0] = 1.5
         else:
@@ -444,10 +439,10 @@ class Enemy(PhysicsEntity):
     def render(self, surf, offset=(0, 0)):
         super().render(surf, offset=offset)
 
-        if self.flip:
-            surf.blit(pygame.transform.flip(self.game.assets['gun'], True, False), (self.rect().centerx - self.game.assets['gun'].get_width() - offset[0], self.rect().centery - offset[1]))
-        else:
-            surf.blit(self.game.assets['gun'], (self.rect().centerx + 4 - offset[0], self.rect().centery - offset[1]))
+        # if self.flip:
+        #     surf.blit(pygame.transform.flip(self.game.assets['gun'], True, False), (self.rect().centerx - self.game.assets['gun'].get_width() - offset[0], self.rect().centery - offset[1]))
+        # else:
+        #     surf.blit(self.game.assets['gun'], (self.rect().centerx + 4 - offset[0], self.rect().centery - offset[1]))
 
 class VisualEntity:
     def __init__(self, game, pos, size, anim_path):
@@ -475,10 +470,14 @@ class Portal(VisualEntity):
 
 class Star(VisualEntity):
     def __init__(self, game, pos, size):
-        super().__init__(game, pos, size, 'star/idle')
+        super().__init__(game, pos, (size[0] - 24, size[1] - 24), 'star/idle')
 
     def update(self):
         super().update()
 
     def render(self, surf, offset=(0, 0)):
         super().render(surf, offset)
+        # pygame.draw.rect(surf, (255, 255, 0), (self.pos[0] - offset[0], self.pos[1] - offset[1], self.size[0] + 16, self.size[1] + 16), 1)
+
+    def rect(self):
+        return pygame.Rect(self.pos[0], self.pos[1], self.size[0], self.size[1])

@@ -137,6 +137,7 @@ class Game:
 
                     if event.key == pygame.K_p:
                         print(self.player.pos)
+                        self.player.pos = [94.0, -395]
 
                     if event.key == pygame.K_LEFT and not self.player.is_fly:
                         if not self.player.is_charging:
@@ -207,6 +208,8 @@ class Game:
             for star in self.visual_goal.copy():
                 star.update()
                 star.render(self.display, (render_scroll[0], render_scroll[1]))
+                self.show_hitbox(star, render_scroll)
+
 
             for enemy in self.enemies.copy():
                 kill = enemy.update(self.tilemap, (0, 0))
