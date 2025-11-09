@@ -457,9 +457,43 @@ class Slime(Enemy):
 class Eyeball(Enemy):
     def __init__(self, game, pos, size):
         super().__init__(game, pos, size, 'eyeball')
+        self.attack_dur = 0
+        self.anim_offset = (0, -16)
 
     def update(self, tilemap, movement=(0, 0, 0, 0)):
         super().update()
+
+        if self.walking:
+            if tilemap.solid_check((self.rect().centerx + (-(self.size[0] // 2) if self.flip else self.size[0] // 2), self.pos[1] + self.size[1] + 5 )):
+                if self.collisions['left'] or self.collisions['right']:
+                    self.flip = not self.flip 
+                else:
+                    movement = [0.5, 0, 0, 0] if self.flip else [0, 0.5, 0, 0]
+            else:
+                self.flip = not self.flip
+            self.walking = max(0, self.walking - 1) # 여기서 업데이트하기 때문에 바로 밑에서 멈춘 순간 프레임을 포착할 수 있음
+
+            if not self.walking:
+                dis = (self.game.player.pos[0] - self.pos[0], self.game.player.pos[1] - self.pos[1])
+                if (abs(dis[1]) < 16):
+                    self.attack_dur = 120
+
+        if self.attack_dur:
+            self.attack_dur = max(0, self.attack_dur - 1)
+            self.anim_offset = (0, -16)
+            self.size = (32, 16)
+            self.set_action('attack')
+
+
+        elif abs(movement[0]) >= 0.5:
+            self.anim_offset = (-8, -16)
+            self.size = (16, 16)
+            self.set_action('run')
+        else:
+            self.anim_offset = (-8, -16)
+            self.size = (16, 16)
+            self.set_action('idle')
+
         PhysicsEntity.update(self, tilemap, movement)
 
     def render(self, surf, offset=(0, 0)):

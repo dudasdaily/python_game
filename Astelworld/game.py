@@ -41,6 +41,8 @@ class Game:
             'player/fall' : Animation(load_images('entities/player/fall')),
             'slime/idle' : Animation(load_images('entities/slime/idle'), img_dur=12),
             'eyeball/idle' : Animation(load_images('entities/eyeball/idle'), img_dur=12),
+            'eyeball/run' : Animation(load_images('entities/eyeball/run'), img_dur=12),
+            'eyeball/attack' : Animation(load_images('entities/eyeball/attack'), img_dur=5, loop=False),
             'portal/idle' : Animation(load_images('tiles/portal', (255, 255, 255)), img_dur=12),
             'star/idle' : Animation(load_images('tiles/star'), img_dur=12),
             'particle/leaf' : Animation(load_images('particles/leaf'), img_dur=20, loop=False),
@@ -218,6 +220,8 @@ class Game:
 
                 if kill:
                     self.enemies.remove(enemy)
+
+            # 플레이어 업데이트, 렌더링
             if not self.dead:
                 self.player.update(self.tilemap, self.movement)
                 self.hp_ui.update()
@@ -339,7 +343,7 @@ class Game:
 
         # 적 스포너
         self.enemies = []
-        for spawner in self.tilemap.extract([('spawners', 0), ('spawners', 1)], keep=False):
+        for spawner in self.tilemap.extract([('spawners', 0), ('spawners', 1), ('spawners', 2)], keep=False):
             if spawner['variant'] == 0 and self.level != '0':
                 self.player.pos = spawner['pos']
             elif spawner['variant'] == 1 and self.level != '0':
