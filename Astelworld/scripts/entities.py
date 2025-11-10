@@ -190,7 +190,12 @@ class Player(PhysicsEntity):
             self.velocity[1] = 1.5
 
         if self.is_charging:
-            self.set_action('charging')
+            if 0 <= self.charge < 30:
+                self.set_action('charging')
+            if 30 <= self.charge < 90:
+                self.set_action('charging2')
+            if self.charge >= 90:
+                self.set_action('charging3')
         elif self.air_time >= 4:
             self.set_action('jump')
         elif movement[0] != 0:
@@ -216,12 +221,12 @@ class Player(PhysicsEntity):
                 self.velocity[0] = 3
                 self.velocity[1] = -1.5
             # 1초
-            if 30 <= self.charge < 60:
+            if 30 <= self.charge < 90:
                 self.factor = 2
                 self.velocity[0] = 3
                 self.velocity[1] = -3
             # 1초 이상
-            if self.charge >= 60:
+            if self.charge >= 90:
                 self.factor = 3
                 self.velocity[0] = 3
                 self.velocity[1] = -5
@@ -475,7 +480,7 @@ class Eyeball(Enemy):
 
             if not self.walking:
                 dis = (self.game.player.pos[0] - self.pos[0], self.game.player.pos[1] - self.pos[1])
-                if (abs(dis[1]) < 16):
+                if (abs(dis[1]) < 32):
                     self.attack_dur = 120
 
         if self.attack_dur:

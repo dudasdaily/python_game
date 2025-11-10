@@ -22,7 +22,7 @@ class Hp:
             return
         
         for i, x in enumerate(range(10, 10 + self.hp_img_width * 3, self.hp_img_width)):
-            surf.blit(self.hp_bar[i], (x, 10))
+            surf.blit(self.hp_bar[i], (x, 17))
             
 class Timer:
     def __init__(self, game):
@@ -31,15 +31,19 @@ class Timer:
         self.score_surf = None
         self.elapsed_time = None
 
+        self.start_time = pygame.time.get_ticks()
+
+        
+
     def update(self):
         self.elapsed_time = self.get_time()
         self.score_surf = self.timer.render(self.elapsed_time, False, (255, 255, 255))
 
     def render(self, surf):
-        surf.blit(self.score_surf, (surf.get_width() - 80, 5))
+        surf.blit(self.score_surf, (surf.get_width() - 70, 15))
 
     def get_time(self) -> string:
-        current_time = pygame.time.get_ticks() - self.game.paused_time
+        current_time = pygame.time.get_ticks() - self.game.paused_time - self.start_time
         
         hour = current_time // 3600000
         current_time %= 3600000

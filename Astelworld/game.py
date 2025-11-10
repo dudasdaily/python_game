@@ -4,7 +4,7 @@ import pygame
 import random
 import sys
 
-from scripts.entities import Eyeball, PhysicsEntity, Player, Slime, Portal, Star
+from scripts.entities import Eyeball, Player, Slime, Portal, Star
 from scripts.utils import load_image, load_images, Animation
 from scripts.tilemap import Tilemap
 from scripts.particle import Particle
@@ -38,6 +38,8 @@ class Game:
             'player/jump' : Animation(load_images('entities/player/jump')),
             'player/run' : Animation(load_images('entities/player/run')),
             'player/charging' : Animation(load_images('entities/player/charging')),
+            'player/charging2' : Animation(load_images('entities/player/charging_anim'), img_dur=10),
+            'player/charging3' : Animation(load_images('entities/player/charging_anim'), img_dur=3),
             'player/fall' : Animation(load_images('entities/player/fall')),
             'slime/idle' : Animation(load_images('entities/slime/idle'), img_dur=12),
             'eyeball/idle' : Animation(load_images('entities/eyeball/idle'), img_dur=12),
@@ -136,10 +138,11 @@ class Game:
                         self.movement = [0, 0, 0, 0]
                         self.ingame_menu()
 
-                    if event.key == pygame.K_p:
-                        print(self.player.pos)
-                        self.player.pos = [105, -360]
-                        print(self.display.get_size())
+                    if event.key == pygame.K_r:
+                        # print(self.player.pos)
+                        # self.player.pos = [105, -360]
+                        # print(self.display.get_size())
+                        self.__init__()
 
                     if event.key == pygame.K_LEFT and not self.player.is_fly:
                         if not self.player.is_charging:
@@ -212,7 +215,6 @@ class Game:
                 star.render(self.display, (render_scroll[0] + 8, render_scroll[1] + 16))
                 # self.show_hitbox(star, render_scroll)
 
-
             for enemy in self.enemies.copy():
                 kill = enemy.update(self.tilemap, (0, 0))
                 enemy.render(self.display, offset=render_scroll)
@@ -268,7 +270,8 @@ class Game:
                 if self.player.rect().colliderect(star_rect):
                     self.final_score = self.timer.get_time()
                     self.show_score()
-                    play = False
+                    # play = False
+                    self.__init__()
 
             # 총알
             # projectile[] = [[x, y], direction, timer]
