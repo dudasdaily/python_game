@@ -42,7 +42,7 @@ class Game:
             'slime/idle' : Animation(load_images('entities/slime/idle'), img_dur=12),
             'eyeball/idle' : Animation(load_images('entities/eyeball/idle'), img_dur=12),
             'eyeball/run' : Animation(load_images('entities/eyeball/run'), img_dur=12),
-            'eyeball/attack' : Animation(load_images('entities/eyeball/attack'), img_dur=5, loop=False),
+            'eyeball/attack' : Animation(load_images('entities/eyeball/attack'), img_dur=17, loop=False),
             'portal/idle' : Animation(load_images('tiles/portal', (255, 255, 255)), img_dur=12),
             'star/idle' : Animation(load_images('tiles/star'), img_dur=12),
             'particle/leaf' : Animation(load_images('particles/leaf'), img_dur=20, loop=False),
