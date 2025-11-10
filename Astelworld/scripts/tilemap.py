@@ -110,10 +110,12 @@ class Tilemap:
             if self.tile_map[tile_loc]['type'] in PHYSICS_TILES:
                 return self.tile_map[tile_loc]
 
-    # id_pair : (type, variant)
-    # id_pairs : [id_pair, ...]
     def extract(self, id_pairs, keep=False):
-        # [(타일타입1, variant1), (타일타입2, variant2)] 이 타일들의 정보들을 담은 리스트를 준다!
+        """
+        id_pair : (type, variant)
+        id_pairs : [id_pair, ...]
+        [(타일타입1, variant1), (타일타입2, variant2)] 이 타일들의 정보들을 담은 리스트를 준다!
+        """
         matches = []
     
         for tile in self.off_grid_tiles.copy():

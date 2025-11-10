@@ -457,7 +457,7 @@ class Slime(Enemy):
 class Eyeball(Enemy):
     def __init__(self, game, pos, size):
         super().__init__(game, pos, size, 'eyeball')
-        self.attack_dur = 0
+        self.attack_dur = 0 # [0 ~ 120]
         self.anim_offset = (0, -16)
 
     def update(self, tilemap, movement=(0, 0, 0, 0)):
@@ -486,7 +486,7 @@ class Eyeball(Enemy):
 
 
         elif abs(movement[0]) >= 0.5:
-            self.anim_offset = (-8, -16)
+            self.anim_offset = (-8, -16) if movement[0] >= 0.5 else (8, -16)
             self.size = (16, 16)
             self.set_action('run')
         else:
