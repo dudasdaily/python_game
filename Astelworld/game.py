@@ -18,8 +18,8 @@ class Game:
         self.paused_time = 0
         self.timer = Timer(self)
         # self.screen = pygame.display.set_mode((320, 240))
-        self.screen = pygame.display.set_mode((640, 480))
-        # self.screen = pygame.display.set_mode((1280, 960))
+        # self.screen = pygame.display.set_mode((640, 480))
+        self.screen = pygame.display.set_mode((1280, 960))
         self.display = pygame.Surface((320, 240))
         self.assets = {
             'hp' : load_images('ui/hp'),
@@ -38,11 +38,11 @@ class Game:
             'player/jump' : Animation(load_images('entities/player/jump')),
             'player/run' : Animation(load_images('entities/player/run')),
             'player/charging' : Animation(load_images('entities/player/charging')),
-            'player/charging2' : Animation(load_images('entities/player/charging_anim'), img_dur=10),
-            'player/charging3' : Animation(load_images('entities/player/charging_anim'), img_dur=3),
+            'player/charging2' : Animation(load_images('entities/player/charging2'), img_dur=10),
+            'player/charging3' : Animation(load_images('entities/player/charging3'), img_dur=4),
             'player/fall' : Animation(load_images('entities/player/fall')),
             'slime/idle' : Animation(load_images('entities/slime/idle'), img_dur=12),
-            'eyeball/idle' : Animation(load_images('entities/eyeball/idle'), img_dur=12),
+            'eyeball/idle' : Animation(load_images('entities/eyeball/idle'), img_dur=18),
             'eyeball/run' : Animation(load_images('entities/eyeball/run'), img_dur=12),
             'eyeball/attack' : Animation(load_images('entities/eyeball/attack'), img_dur=17, loop=False),
             'portal/idle' : Animation(load_images('tiles/portal', (255, 255, 255)), img_dur=12),
