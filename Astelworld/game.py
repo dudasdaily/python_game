@@ -139,6 +139,7 @@ class Game:
                     if event.key == pygame.K_p:
                         print(self.player.pos)
                         self.player.pos = [105, -360]
+                        print(self.display.get_size())
 
                     if event.key == pygame.K_LEFT and not self.player.is_fly:
                         if not self.player.is_charging:
@@ -357,6 +358,7 @@ class Game:
                 self.player.pos = [100, self.display.get_height() - 30]
             else:
                 self.player.pos = self.pos_queue.pop(0)
+                self.movement = [0, 0, 0, 0]
 
         self.projectiles = []
         self.particles = []
@@ -453,6 +455,10 @@ class Game:
             self.screen.blit(txt, (self.screen.get_rect().centerx - (txt.get_width() // 2), self.screen.get_rect().centery - (txt.get_height() // 2)))
 
             for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
                         running = False
