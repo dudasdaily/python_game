@@ -15,7 +15,7 @@ AUTOTILE_MAP = {
 AUTOTILE_TYPES = {'grass', 'stone'}
 
 NEIGHBOR_OFFSET = [(-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (0, 0), (-1, 1), (0, 1), (1, 1)]
-PHYSICS_TILES = {'grass', 'stone', 'meteor', 'snow'}
+PHYSICS_TILES = {'grass', 'stone', 'meteor', 'snow', 'crack'}
 
 class Tilemap:
     def __init__(self, game, tile_size = 16):

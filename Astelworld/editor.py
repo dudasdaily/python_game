@@ -22,6 +22,7 @@ class Editor:
             'spawners' : load_images('tiles/spawners'),
             'portal' : load_images('tiles/portal', (255, 255, 255)),
             'star' : load_images('tiles/star'),
+            'crack' : load_images('tiles/crack'),
         }
 
         self.movement = [0, 0, 0, 0] # 좌, 우, 상, 하

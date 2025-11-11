@@ -18,14 +18,15 @@ class Game:
         self.paused_time = 0
         self.timer = Timer(self)
         # self.screen = pygame.display.set_mode((320, 240))
-        # self.screen = pygame.display.set_mode((640, 480))
-        self.screen = pygame.display.set_mode((1280, 960))
+        self.screen = pygame.display.set_mode((640, 480))
+        # self.screen = pygame.display.set_mode((1280, 960))
         self.display = pygame.Surface((320, 240))
         self.assets = {
             'hp' : load_images('ui/hp'),
             'snow' : load_images('tiles/snow'),
             'decor' : load_images('tiles/decor'),
             'grass' : load_images('tiles/grass'),
+            'crack' : load_images('tiles/crack'),
             'large_decor' : load_images('tiles/large_decor'),
             'stone' : load_images('tiles/stone'),
             'meteor' : load_images('tiles/meteor'),
