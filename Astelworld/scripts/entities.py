@@ -485,9 +485,9 @@ class Eyeball(Enemy):
 
         if self.attack_dur:
             self.attack_dur = max(0, self.attack_dur - 1)
-            self.anim_offset = (0, -16)
-            self.size = (32, 16)
+            self.anim_offset = (-8, -16)
             self.set_action('attack')
+            self.size = (48, 16)
 
 
         elif abs(movement[0]) >= 0.5:
