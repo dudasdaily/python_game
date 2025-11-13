@@ -6,4 +6,4 @@ class Scene:
 
     def handle_events(self, events): pass
     def update(self, dt): pass
-    def render(self, surf): pass
+    def render(self, surf, offset=(0, 0)): pass

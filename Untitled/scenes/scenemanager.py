@@ -8,8 +8,8 @@ class SceneManager:
             "title" : Title(game, self),
             "battle" : Battle(game, self),
             "maingame" : Maingame(game, self),
-            }
-        
+        }
+
         self.current_scene = self.scenes[start_scene]
 
     def go_to(self, scene):

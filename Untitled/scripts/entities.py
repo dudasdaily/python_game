@@ -5,10 +5,10 @@ class Entity:
         self.movement = [0, 0]
         self.velocity = [0, 0]
     
-    def update(self):
+    def update(self, dt):
         pass
 
-    def render(self):
+    def render(self, surf):
         pass
 
 class Player:
@@ -20,8 +20,11 @@ class Player:
             "space" : False,
         }
     
-    def update(self):
+    def update(self, dt):
         pass
 
-    def render(self):
+    def render(self, surf):
+        pass
+
+    def handle_collision(self):
         pass
