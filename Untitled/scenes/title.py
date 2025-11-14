@@ -39,4 +39,4 @@ class Title(Scene):
             self.elasped_time = 0
 
         if self.is_render:
-            surf.blit(ft, (self.game.display.get_size()[0] // 2 - ft.get_width() // 2, self.game.display.get_size()[1] // 2 - ft.get_height() // 2))        
+            surf.blit(ft, (self.game.display.get_width() // 2 - ft.get_width() // 2, self.game.display.get_height() // 2 - ft.get_height() // 2))        

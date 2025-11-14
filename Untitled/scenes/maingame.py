@@ -4,17 +4,15 @@ import sys
 from scenes.scene import Scene
 from scripts.camera import Camera
 from scripts.entities import Player
+from scripts.utils import load_image, load_images, Animation
 
 class Maingame(Scene):
     def __init__(self, game, manager):
         super().__init__(game, manager)
-        self.camera = Camera()
-        self.player = Player()
+        self.camera = Camera(game)
+        self.player = Player(game)
         
-        # 이미지 에셋들
-        self.assets = {
-
-        }
+        self.camera.set_target(self.player)
 
     def handle_events(self, events):
         # 입력 감지
@@ -43,7 +41,9 @@ class Maingame(Scene):
         self.player.handle_collision()
 
     def update(self, dt):
-        pass
+        self.player.update(dt)
+        self.camera.follow()
 
     def render(self, surf, offset=(0, 0)):
-        surf.fill((255, 255, 255))
+        surf.blit(self.game.assets['background'], (-self.camera.offset[0], -self.camera.offset[1]))
+        self.player.render(surf, self.camera.offset)

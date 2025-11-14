@@ -2,6 +2,7 @@ import pygame
 import sys
 
 from scenes.scenemanager import SceneManager
+from scripts.utils import load_image, load_images, Animation
 
 FRAME = 60
 pygame.init()
@@ -16,6 +17,12 @@ class Game:
         # Scene 관련 설정
         self.sm = SceneManager(self, "title")
         # self.sm.current_scene.manager = self.sm
+
+        # 에셋 관련 설정
+        self.assets = {
+            'background' : load_image('background.png'),
+            'player/idle' : Animation(load_images('player/idle'), img_dur=5, loop=True),
+        }
 
     def run(self):
         play = True
