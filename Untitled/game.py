@@ -14,15 +14,15 @@ class Game:
         self.display =pygame.Surface((320, 240))
         self.clock = pygame.time.Clock()
 
-        # Scene 관련 설정
-        self.sm = SceneManager(self, "title")
-        # self.sm.current_scene.manager = self.sm
-
         # 에셋 관련 설정
         self.assets = {
             'background' : load_image('background.png'),
-            'player/idle' : Animation(load_images('player/idle'), img_dur=5, loop=True),
+            'player/idle' : Animation(load_images('player/idle'), img_dur=30, loop=True),
         }
+
+        # Scene 관련 설정
+        self.sm = SceneManager(self, "title")
+        # self.sm.current_scene.manager = self.sm
 
     def run(self):
         play = True

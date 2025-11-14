@@ -4,14 +4,13 @@ import sys
 from scenes.scene import Scene
 from scripts.camera import Camera
 from scripts.entities import Player
-from scripts.utils import load_image, load_images, Animation
 
 class Maingame(Scene):
     def __init__(self, game, manager):
         super().__init__(game, manager)
         self.camera = Camera(game)
-        self.player = Player(game)
-        
+        self.player = Player(game, 'player', (16, 16), (50, 120))
+
         self.camera.set_target(self.player)
 
     def handle_events(self, events):
