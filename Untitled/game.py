@@ -18,6 +18,8 @@ class Game:
         self.assets = {
             'background' : load_image('background.png'),
             'player/idle' : Animation(load_images('player/idle'), img_dur=30, loop=True),
+            'player/run' : Animation(load_images('player/run'), img_dur=15, loop=True),
+            'arrow/idle' : Animation(load_images('ui/arrow/idle'), loop=True),
         }
 
         # Scene 관련 설정
@@ -25,7 +27,7 @@ class Game:
         # self.sm.current_scene.manager = self.sm
 
     def run(self):
-        play = True
+        play = True 
         while play:
             dt = self.clock.tick(FRAME) / 1000 # dt = 직전 업데이트로부터 흐른 시간 (sec)
 
