@@ -36,7 +36,7 @@ class Entity(Object):
             self.animation = self.game.assets[f'{self.type}/{self.action}'].copy()
 
 class Player(Entity):
-    DEFYING_TIME = 100
+    DEFYING_TIME = 50
 
     def __init__(self, game, e_type, size, pos):
         super().__init__(game, e_type, size, pos)
@@ -46,7 +46,7 @@ class Player(Entity):
         self.max_ap = 5
         self.ap = self.max_ap
         
-        self.velocity = [100, 2]
+        self.velocity = [200, 2]
         self.anim_offset = (0, 0)
         self.defying_collision = self.DEFYING_TIME
 
@@ -91,7 +91,7 @@ class Player(Entity):
         
         # 오브젝트와 충돌을 한다면
         if abs(obj.rect().centerx) - 3 <= abs(self.rect().centerx) <= abs(obj.rect().centerx) + 3 and obj.type != 'player':
-            print(obj.type)
+            # print(obj.type)
             self.state["moving"] = False
 
         # if obj.rect().colliderect(self.rect()) and obj.type != 'player':

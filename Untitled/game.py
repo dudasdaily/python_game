@@ -19,7 +19,14 @@ class Game:
             'background' : load_image('background.png'),
             'player/idle' : Animation(load_images('player/idle'), img_dur=30, loop=True),
             'player/run' : Animation(load_images('player/run'), img_dur=15, loop=True),
-            'arrow/idle' : Animation(load_images('ui/arrow/idle'), loop=True),
+            # 'arrow/left' : Animation(load_images('ui/arrow/left'), loop=True),
+            # 'arrow/left_select' : Animation(load_images('ui/arrow/left_select'), loop=True),
+            # 'arrow/right' : Animation(load_images('ui/arrow/right'), loop=True),
+            # 'arrow/right_select' : Animation(load_images('ui/arrow/right_select'), loop=True),
+            'arrow/left' :load_image('ui/arrow/left/00.png'),
+            'arrow/left_select' :load_image('ui/arrow/left_select/00.png'),
+            'arrow/right' :load_image('ui/arrow/right/00.png'),
+            'arrow/right_select' :load_image('ui/arrow/right_select/00.png'),
         }
  
         # Scene 관련 설정
