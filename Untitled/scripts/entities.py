@@ -1,12 +1,24 @@
 import pygame
 
-class Entity:
-    def __init__(self, game, e_type, size, pos=(0, 0)):
+class Object:
+    def __init__(self, game, e_type, size, pos):
         self.game = game
-
-        self.pos = list(pos)
         self.type = e_type
         self.size = size
+        self.pos = list(pos)
+
+    def update(self):
+        pass
+
+    def render(self):
+        pass
+
+    def rect(self):
+        return pygame.Rect(self.pos[0], self.pos[1], self.size[0], self.size[1])
+
+class Entity(Object):
+    def __init__(self, game, e_type, size, pos=(0, 0)):
+        super().__init__(game, e_type, size, pos)
         self.action = ''
 
         self.movement = [0, 0]
@@ -24,6 +36,8 @@ class Entity:
             self.animation = self.game.assets[f'{self.type}/{self.action}'].copy()
 
 class Player(Entity):
+    DEFYING_TIME = 100
+
     def __init__(self, game, e_type, size, pos):
         super().__init__(game, e_type, size, pos)
         self.max_hp = 5
@@ -34,6 +48,7 @@ class Player(Entity):
         
         self.velocity = [100, 2]
         self.anim_offset = (0, 0)
+        self.defying_collision = self.DEFYING_TIME
 
         self.set_action('idle')
 
@@ -55,6 +70,9 @@ class Player(Entity):
 
         self.animation.update()
 
+        if self.defying_collision:
+            self.defying_collision = max(0, self.defying_collision - 1)
+
         if self.state["left"]:
             self.flip = True
             self.set_action('run')
@@ -67,27 +85,35 @@ class Player(Entity):
     def render(self, surf, offset=(0, 0)):
         surf.blit(pygame.transform.flip(self.animation.img(), self.flip, False), (self.pos[0] - offset[0] - self.anim_offset[0], self.pos[1] - offset[1] - self.anim_offset[1]))
 
-    def handle_collision(self):
+    def handle_collision(self, obj):
+        if self.defying_collision:
+            return
+        
         # 오브젝트와 충돌을 한다면
-        # self.state["moving"] = False
-        pass
+        if abs(obj.rect().centerx) - 3 <= abs(self.rect().centerx) <= abs(obj.rect().centerx) + 3 and obj.type != 'player':
+            print(obj.type)
+            self.state["moving"] = False
+
+        # if obj.rect().colliderect(self.rect()) and obj.type != 'player':
+        #     print(obj.type)
+        #     self.state["moving"] = False
 
 class Enemy(Entity):
     def __init__(self, game, e_type, size, pos):
-        pass
+        super().__init__(game, e_type, size, pos)
 
-class Chest:
-    def __init__(self, game):
-        pass
+class Boss(Entity):
+    def __init__(self, game, e_type, size, pos):
+        super().__init__(game, e_type, size, pos)
 
-class Potion:
-    def __init__(self, game):
-        pass
+class Chest(Object):
+    def __init__(self, game, e_type, size, pos):
+        super().__init__(game, e_type, size, pos)
 
-class Hp_Potion(Potion):
-    def __init__(self, game):
-        super().__init__(game)
+class Hp_Potion(Object):
+    def __init__(self, game, e_type, size, pos):
+        super().__init__(game, e_type, size, pos)
 
-class Ap_Potion(Potion):
-    def __init__(self, game):
-        super().__init__(game)
+class Ap_Potion(Object):
+    def __init__(self, game, e_type, size, pos):
+        super().__init__(game, e_type, size, pos)

@@ -5,12 +5,22 @@ from scenes.scene import Scene
 from scripts.camera import Camera
 from scripts.entities import Player
 from scripts.hud import Player_hud
+from scripts.map import Map
 
 class Maingame(Scene):
     def __init__(self, game, manager):
         super().__init__(game, manager)
         self.camera = Camera(game)
-        self.player = Player(game, 'player', (16, 16), (self.game.screen.get_width() // 2, self.game.display.get_height() // 2))
+        # self.player = Player(game, 'player', (60, 90), (self.game.screen.get_width() // 2, self.game.display.get_height() // 2))
+        # self.player = Player(game, 'player', (60, 90), (100, self.game.display.get_height() // 2))
+        self.player = Player(game, 'player', (60, 90), (0, 0))
+        self.map = Map(game, self.player)
+        self.map.generate_object()
+
+        print(self.map.player_idx)
+
+        # for obj in self.map.obj_list:
+        #     print(obj.type)
 
         self.p_hud = Player_hud(game)
 
@@ -35,12 +45,23 @@ class Maingame(Scene):
     def update(self, dt):
         self.p_hud.update(self.option_idx)
         self.player.update(dt)
+
         # 충돌 감지
-        self.player.handle_collision()
+        for obj in self.map.obj_list:
+            self.player.handle_collision(obj)
+
         self.camera.follow()
 
     def render(self, surf, offset=(0, 0)):
-        surf.blit(self.game.assets['background'], (-self.camera.offset[0], -self.camera.offset[1]))
+        bg_width = self.game.assets['background'].get_width()
+        wrapping_x = -self.camera.offset[0] % bg_width
+        y_pos = -self.camera.offset[1]
+
+        surf.blit(self.game.assets['background'], (wrapping_x - bg_width, y_pos))
+        surf.blit(self.game.assets['background'], (wrapping_x, y_pos))
+
+        self.map.render(surf, self.camera.offset)
+
         self.player.render(surf, self.camera.offset)
 
         # 왼쪽, 오른쪽 선택
@@ -52,7 +73,11 @@ class Maingame(Scene):
             return
         
         self.player.state["moving"] = True
+        self.player.defying_collision = self.player.DEFYING_TIME
+
         if self.option_idx == 0:
             self.player.state["left"] = True
         if self.option_idx == 2:
             self.player.state["right"] = True
+
+        self.option_idx = 1

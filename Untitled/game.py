@@ -21,9 +21,9 @@ class Game:
             'player/run' : Animation(load_images('player/run'), img_dur=15, loop=True),
             'arrow/idle' : Animation(load_images('ui/arrow/idle'), loop=True),
         }
-
+ 
         # Scene 관련 설정
-        self.sm = SceneManager(self, "title")
+        self.sm = SceneManager(self, "title") 
         # self.sm.current_scene.manager = self.sm
 
     def run(self):
