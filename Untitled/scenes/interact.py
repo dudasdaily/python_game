@@ -1,49 +1,78 @@
 import pygame
 import sys
 
-from scripts.hud import InteractMenu
+from scripts.hud import TextBox, InteractBox
 from scenes.scene import Scene
 
 class Interact(Scene):
-    TXTBOX_COLOR = (255, 255, 255, 200)
-    SELECT_COLOR = (0, 0, 0)
-    UNSELECT_COLOR = (169, 169, 169)
+    TEXT_BOX_COLOR = (255, 255, 255, 200)
+    SELECTED_COLOR = (0, 0, 0)
+    UNSELECTED_COLOR = (169, 169, 169)
 
     def __init__(self, game, manager):
         super().__init__(game, manager)
-        self.collided_obj = None
-        self.lines = []
+        self.collided_obj = None # maingame에서 sm.go_to(obj)로 초기화
+        
+        self.texts = [] # 텍스트 박스(TextBox)의 내용
+        self.interect_texts = [] # 상호작용 박스(InteractBox)의 내용
 
-        if self.collided_obj != None:
-            self.lines = self.collided_obj.interact_text.split('\n')
+        self.init_cnt = 0
 
-        # 텍스트 박스 설정
-        self.x_pos = 10
-        self.y_pos = self.game.display.get_height() - 60
-        self.text_box = pygame.Surface((self.game.display.get_width() - 2 * self.x_pos, 50), pygame.SRCALPHA)
+        self.box_queue = [] # Box들을 담은 순서
 
     def handle_events(self, events):
         for event in events:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+
             if event.type == pygame.KEYDOWN:
-                pass
+                if event.key == pygame.K_LEFT:
+                    pass
+                if event.key == pygame.K_RIGHT:
+                    pass
+                if event.key == pygame.K_SPACE and self.box_queue:
+                    if isinstance(self.box_queue[0], TextBox):
+                        self.box_queue.pop(0)
+
+                    if isinstance(self.box_queue[0], InteractBox):
+                        self.game.sm.scenes['maingame'].map.obj_list.remove(self.collided_obj)
+                        self.game.sm.scenes['maingame'].map.update()
+                        self.box_queue.pop(0)
+
+                    
             if event.type == pygame.KEYUP:
                 pass
 
     def update(self, dt):
         self.game.sm.scenes['maingame'].update(dt)
 
+        # 플레이어가 객체와 충돌 했을 때!
+        if self.collided_obj and not self.init_cnt:
+            self.init_cnt += 1
+
+            for texts in self.collided_obj.texts:
+                self.texts.append(texts.split('\n'))
+
+            self.interect_texts = self.collided_obj.interact_text.split('\n')
+
+            for text in self.texts:
+                self.box_queue.append(TextBox(self.game, text))
+
+            self.box_queue.append(InteractBox(self.game, self.interect_texts))
+        
+        if not self.box_queue:
+            self.__init__(self.game, self.manager)
+            self.manager.go_to("maingame", None)
+
+        print(f'len: {len(self.box_queue)}, texts: {self.texts}, interect_texts: {self.interect_texts}')
+
+        for box in self.box_queue:
+            box.update()
+
     def render(self, surf):
         # 베이스 씬 렌더링
         self.game.sm.scenes["maingame"].render(surf)
 
-        # 텍스트 박스 렌더링
-        pygame.draw.rect(self.text_box, self.TXTBOX_COLOR, pygame.Rect(0, 0, self.text_box.get_width(), self.text_box.get_height()))
-        for line in self.lines:
-            self.text_box.blit(self.font.render(line, False, self.SELECT_COLOR), (50, self.y_offset))
-            self.y_offset += self.line_spacing
-
-        # display에 텍스트 박스를 렌더링
-        surf.blit(self.text_box, (self.x_pos, self.y_pos))
+        if self.box_queue:
+            self.box_queue[0].render(surf)

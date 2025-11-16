@@ -9,7 +9,8 @@ class Map:
         self.player_idx = 0
         self.num_of_object = None
         # self.obj_list = [self.player, Hp_Potion(self.game, 'hp_potion', (60, 90), (0, 0)), Ap_Potion(self.game, 'ap_potion', (60, 90), (0, 0)), Boss(self.game, 'boss', (90, 120), (0, 0))]
-        self.obj_list = [self.player, Hp_Potion(self.game, 'hp_potion', (60, 90), (0, 0)), Enemy(self.game, 'enemy', (60, 90), (0, 0))]
+        self.obj_list = [self.player, Enemy(self.game, 'enemy', (60, 90), (0, 0)), Enemy(self.game, 'enemy', (60, 90), (0, 0))]
+
 
     def generate_object(self):
         # self.num_of_object = random.randint(5, 10)
@@ -38,6 +39,9 @@ class Map:
             swap_idx = random.randint(1, self.num_of_object - 2)
             self.obj_list[-1], self.obj_list[swap_idx] = self.obj_list[swap_idx], self.obj_list[-1]
 
+        self.update()
+
+    def update(self):
         for i, obj in enumerate(self.obj_list):
             x_pos = self.game.display.get_width() * (i+1) - obj.size[0] // 2
             y_pos = self.game.display.get_height() // 2

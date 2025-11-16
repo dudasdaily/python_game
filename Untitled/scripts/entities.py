@@ -6,7 +6,8 @@ class Object:
         self.type = e_type
         self.size = size
         self.pos = list(pos)
-        self.interact_text = ''
+        self.texts = '' # 스페이스 바 누르면 바로 넘어가는 텍스트 박스의 내용
+        self.interact_text = '' # 1. 2. 3. 등 유저가 선택할 수 있는 상호작용 박스의 내용
 
     def update(self):
         pass
@@ -99,15 +100,16 @@ class Player(Entity):
 
             return True
 
-
 class Enemy(Entity):
     def __init__(self, game, e_type, size, pos):
         super().__init__(game, e_type, size, pos)
+        self.texts = ['적을 만났다!']
         self.interact_text = '1. 싸운다\n2. 도망간다'
 
 class Boss(Entity):
     def __init__(self, game, e_type, size, pos):
         super().__init__(game, e_type, size, pos)
+        self.texts = ['보스를 만났다!']
         self.interact_text = '1. 싸운다\n2. 도망간다'
 
 class Chest(Object):

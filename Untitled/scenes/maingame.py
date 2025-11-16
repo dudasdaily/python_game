@@ -34,24 +34,25 @@ class Maingame(Scene):
 
             if event.type == pygame.KEYDOWN and not self.player.state["moving"]:
                 if event.key == pygame.K_LEFT:
-                    if self.map.player_idx == 0:
+                    if self.map.player_idx == 0 and len(self.map.obj_list) == 1:
+                        pass
+                    elif self.map.player_idx == 0:
                         self.option_idx = self.option_idx - 1 if self.option_idx > 1 else 2
-
                     elif self.map.player_idx == len(self.map.obj_list) - 1:
                         self.option_idx = self.option_idx - 1 if self.option_idx > 0 else 1
-
                     else:
                         self.option_idx = self.option_idx - 1 if self.option_idx > 0 else 2
 
                 if event.key == pygame.K_RIGHT:
-                    if self.map.player_idx == 0:
+                    if self.map.player_idx == 0 and len(self.map.obj_list) == 1:
+                        pass
+                    elif self.map.player_idx == 0:
                         self.option_idx = self.option_idx + 1 if self.option_idx < 2 else 1
-
                     elif self.map.player_idx == len(self.map.obj_list) - 1:
                         self.option_idx = self.option_idx + 1 if self.option_idx < 1 else 0
-                        
                     else:
                         self.option_idx = self.option_idx + 1 if self.option_idx < 2 else 0
+
                 if event.key == pygame.K_SPACE:
                    self.judge_movement()
             
@@ -80,8 +81,6 @@ class Maingame(Scene):
 
         self.map.render(surf, self.camera.offset)
         self.player.render(surf, self.camera.offset)
-
-        # InteractMenu(self.game, "1. 싸운다!\n2. 도망간다").render(surf)
 
         # 왼쪽, 오른쪽 선택
         if not self.player.state["moving"]:
