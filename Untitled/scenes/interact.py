@@ -12,6 +12,7 @@ class Interact(Scene):
     def __init__(self, game, manager):
         super().__init__(game, manager)
         self.collided_obj = None
+        self.lines = []
 
         if self.collided_obj != None:
             self.lines = self.collided_obj.interact_text.split('\n')
@@ -31,8 +32,8 @@ class Interact(Scene):
             if event.type == pygame.KEYUP:
                 pass
 
-    def update(self):
-        pass
+    def update(self, dt):
+        self.game.sm.scenes['maingame'].update(dt)
 
     def render(self, surf):
         # 베이스 씬 렌더링
@@ -43,7 +44,6 @@ class Interact(Scene):
         for line in self.lines:
             self.text_box.blit(self.font.render(line, False, self.SELECT_COLOR), (50, self.y_offset))
             self.y_offset += self.line_spacing
-
 
         # display에 텍스트 박스를 렌더링
         surf.blit(self.text_box, (self.x_pos, self.y_pos))

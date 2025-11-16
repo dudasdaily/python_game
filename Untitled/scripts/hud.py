@@ -21,8 +21,8 @@ class Player_hud:
         self.action = ''
 
     def update(self, option_idx):
-        self.player_idx = self.game.sm.current_scene.map.player_idx
-        self.obj_len = len(self.game.sm.current_scene.map.obj_list)
+        self.player_idx = self.game.sm.scenes["maingame"].map.player_idx
+        self.obj_len = len(self.game.sm.scenes["maingame"].map.obj_list)
 
         self.state = [0, 0, 0]
         self.state[option_idx] = 1

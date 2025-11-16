@@ -97,6 +97,8 @@ class Player(Entity):
             self.state["moving"] = False
             self.state["collision"] = True
 
+            return True
+
 
 class Enemy(Entity):
     def __init__(self, game, e_type, size, pos):
