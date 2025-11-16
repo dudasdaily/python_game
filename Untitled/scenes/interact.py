@@ -45,6 +45,7 @@ class Interact(Scene):
 
                     # !!!!수정 필요!!!!
                     elif isinstance(box, InteractBox):
+                        self.judge_interact()
                         self.box_queue.pop(0)
                     
             if event.type == pygame.KEYUP:
@@ -85,3 +86,6 @@ class Interact(Scene):
 
         if self.box_queue:
             self.box_queue[0].render(surf)
+
+    def judge_interact(self):
+        if self.inter
