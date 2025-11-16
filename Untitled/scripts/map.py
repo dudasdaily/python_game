@@ -39,15 +39,17 @@ class Map:
             swap_idx = random.randint(1, self.num_of_object - 2)
             self.obj_list[-1], self.obj_list[swap_idx] = self.obj_list[swap_idx], self.obj_list[-1]
 
-        self.update()
-
-    def update(self):
         for i, obj in enumerate(self.obj_list):
             x_pos = self.game.display.get_width() * (i+1) - obj.size[0] // 2
             y_pos = self.game.display.get_height() // 2
 
             obj.pos = [x_pos, y_pos]
 
+            if obj == self.player:
+                self.player_idx = i
+
+    def update(self):
+        for i, obj in enumerate(self.obj_list):
             if obj == self.player:
                 self.player_idx = i
 
