@@ -119,7 +119,9 @@ class Chest(Object):
 class Hp_Potion(Object):
     def __init__(self, game, e_type, size, pos):
         super().__init__(game, e_type, size, pos)
+        self.texts = ['HP 포션이다!']
 
 class Ap_Potion(Object):
     def __init__(self, game, e_type, size, pos):
         super().__init__(game, e_type, size, pos)
+        self.texts = ['AP 포션이다!']

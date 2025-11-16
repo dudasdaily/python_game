@@ -1,3 +1,4 @@
+from ast import In
 import pygame
 import sys
 
@@ -16,6 +17,7 @@ class Interact(Scene):
         self.texts = [] # 텍스트 박스(TextBox)의 내용
         self.interect_texts = [] # 상호작용 박스(InteractBox)의 내용
 
+        self.interect_idx = 0
         self.init_cnt = 0
 
         self.box_queue = [] # Box들을 담은 순서
@@ -26,25 +28,24 @@ class Interact(Scene):
                 pygame.quit()
                 sys.exit()
 
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    pass
-                if event.key == pygame.K_RIGHT:
-                    pass
-                if event.key == pygame.K_SPACE and self.box_queue:
-                    box = self.box_queue[0]
+            if event.type == pygame.KEYDOWN and self.box_queue:
+                box = self.box_queue[0]
 
+                if event.key == pygame.K_LEFT and isinstance(box, InteractBox):
+                    self.interect_idx = max(0, self.interect_idx - 1)
+                    print(self.interect_idx)
+                    
+                if event.key == pygame.K_RIGHT and isinstance(box, InteractBox):
+                    self.interect_idx = min(len(self.interect_texts) - 1, self.interect_idx + 1)
+                    print(self.interect_idx)
+                    
+                if event.key == pygame.K_SPACE:
                     if isinstance(box, TextBox):
                         self.box_queue.pop(0)
 
                     # !!!!수정 필요!!!!
                     elif isinstance(box, InteractBox):
-                        self.game.sm.scenes['maingame'].map.obj_list.remove(self.collided_obj)
-                        self.game.sm.scenes['maingame'].map.update()
                         self.box_queue.pop(0)
-                        print(f'충돌 끝났을 때 player의 pos : {self.game.sm.scenes["maingame"].player.pos}')
-
-
                     
             if event.type == pygame.KEYUP:
                 pass
@@ -65,10 +66,10 @@ class Interact(Scene):
                 self.box_queue.append(TextBox(self.game, text))
 
             self.box_queue.append(InteractBox(self.game, self.interect_texts))
-
-            print(self.interect_texts)
         
         if not self.box_queue:
+            self.game.sm.scenes['maingame'].map.obj_list.remove(self.collided_obj)
+            self.game.sm.scenes['maingame'].map.update()
             self.__init__(self.game, self.manager)
             self.manager.go_to("maingame", None)
 
