@@ -76,7 +76,7 @@ class Interact(Scene):
         # print(f'len: {len(self.box_queue)}, texts: {self.texts}, interect_texts: {self.interect_texts}')
 
         for box in self.box_queue:
-            box.update()
+            box.update(self.interect_idx)
 
     def render(self, surf):
         # 베이스 씬 렌더링

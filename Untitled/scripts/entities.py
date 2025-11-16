@@ -104,7 +104,7 @@ class Enemy(Entity):
     def __init__(self, game, e_type, size, pos):
         super().__init__(game, e_type, size, pos)
         self.texts = ['적을 만났다!']
-        self.interact_text = '1. 싸운다\n2. 도망간다'
+        self.interact_text = '1. 싸운다\n2. 도망간다\n3. 테스트'
 
 class Boss(Entity):
     def __init__(self, game, e_type, size, pos):

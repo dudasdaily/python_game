@@ -47,8 +47,6 @@ class Player_hud:
 
 class InteractMenu(Hud):
     TXTBOX_COLOR = (255, 255, 255, 200)
-    SELECT_COLOR = (0, 0, 0)
-    UNSELECT_COLOR = (169, 169, 169)
 
     def __init__(self, game, text=None):
         super().__init__(game, text)
@@ -94,7 +92,7 @@ class TextBox(Box):
         self.y_offset = 10
         self.line_spacing = 15
 
-    def update(self):
+    def update(self, idx=None):
         pass
 
     def render(self, surf):
@@ -108,21 +106,37 @@ class TextBox(Box):
             y_offset += self.line_spacing
 
         surf.blit(self.box, (self.box_x, self.box_y))
-        
-        
     
 class InteractBox(Box):
+    SELECT_COLOR = (0, 0, 0)
+    UNSELECT_COLOR = (169, 169, 169)
+
     def __init__(self, game, interact_text):
         super().__init__(game)
+        self.x_offset = 30
+        self.y_offset = 10
+
+        self.x_spacing = 60
+        self.y_spacing = 18
+
         self.interact_text = interact_text
         self.selected_idx = 0
 
-    def update(self):
-        pass
+    def update(self, interact_idx):
+        self.selected_idx = interact_idx
 
     def render(self, surf):
         super().render(surf)
-        # 여기에 코딩
+
+        y_offset = self.y_offset
+        # 여기부터 코딩
+        for i, text in enumerate(self.interact_text):
+            FONT_COLOR = self.UNSELECT_COLOR if i != self.selected_idx else self.SELECT_COLOR
+            self.box.blit(self.font.render(text, False, FONT_COLOR), (self.x_offset + (i % 2) * (self.x_spacing + len(text)*14), y_offset))
+
+            if i % 2 == 1:
+                y_offset += self.y_spacing
+        # 여기까지
         surf.blit(self.box, (self.box_x, self.box_y))
         pass
 
