@@ -23,15 +23,16 @@ class Player_hud:
         self.action = ''
 
     def update(self, option_idx):
-        self.player_idx = self.game.sm.scenes["maingame"].map.player_idx
+        self.player_idx = self.game.sm.scenes["maingame"].map.curr_player_idx
         self.obj_len = len(self.game.sm.scenes["maingame"].map.obj_list)
 
         self.state = [0, 0, 0]
         self.state[option_idx] = 1
 
     def render(self, surf):
-        if self.player_idx == 0 and self.obj_len == 1:
-            pass
+        if self.obj_len == 1:
+            return
+        
         elif self.player_idx == 0:
             surf.blit(self.game.assets['arrow/right'].copy(), (0, 0))
         elif self.player_idx == self.obj_len - 1:

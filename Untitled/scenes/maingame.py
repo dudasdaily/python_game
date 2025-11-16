@@ -33,25 +33,37 @@ class Maingame(Scene):
                 sys.exit()
 
             if event.type == pygame.KEYDOWN and not self.player.state["moving"]:
-                if event.key == pygame.K_LEFT:
-                    if self.map.player_idx == 0 and len(self.map.obj_list) == 1:
-                        pass
-                    elif self.map.player_idx == 0:
-                        self.option_idx = self.option_idx - 1 if self.option_idx > 1 else 2
-                    elif self.map.player_idx == len(self.map.obj_list) - 1:
-                        self.option_idx = self.option_idx - 1 if self.option_idx > 0 else 1
+                if event.key == pygame.K_LEFT and len(self.map.obj_list) > 1:
+                    if self.map.curr_player_idx == 0:
+                        self.option_idx = max(1, self.option_idx - 1)
                     else:
-                        self.option_idx = self.option_idx - 1 if self.option_idx > 0 else 2
+                        self.option_idx = max(0, self.option_idx - 1)
 
-                if event.key == pygame.K_RIGHT:
-                    if self.map.player_idx == 0 and len(self.map.obj_list) == 1:
-                        pass
-                    elif self.map.player_idx == 0:
-                        self.option_idx = self.option_idx + 1 if self.option_idx < 2 else 1
-                    elif self.map.player_idx == len(self.map.obj_list) - 1:
-                        self.option_idx = self.option_idx + 1 if self.option_idx < 1 else 0
+                    # if self.map.player_idx == 0 and len(self.map.obj_list) == 1:
+                    #     pass
+                    # elif self.map.player_idx == 0:
+                    #     self.option_idx = self.option_idx - 1 if self.option_idx > 1 else 2
+                    # elif self.map.player_idx == len(self.map.obj_list) - 1:
+                    #     self.option_idx = self.option_idx - 1 if self.option_idx > 0 else 1
+                    # else:
+                    #     self.option_idx = self.option_idx - 1 if self.option_idx > 0 else 2
+
+                if event.key == pygame.K_RIGHT and len(self.map.obj_list) > 1:
+                    if self.map.curr_player_idx == len(self.map.obj_list) - 1:
+                        # self.option_idx = 0
+                        self.option_idx = min(1, self.option_idx + 1)
                     else:
-                        self.option_idx = self.option_idx + 1 if self.option_idx < 2 else 0
+                        self.option_idx = min(2, self.option_idx + 1)
+                    # if self.map.player_idx == 0 and len(self.map.obj_list) == 1:
+                    #     pass
+                    # elif self.map.player_idx == 0:
+                    #     self.option_idx = self.option_idx + 1 if self.option_idx < 2 else 1
+                    # elif self.map.player_idx == len(self.map.obj_list) - 1:
+                    #     self.option_idx = self.option_idx + 1 if self.option_idx < 1 else 0
+                    # else:
+                    #     self.option_idx = self.option_idx + 1 if self.option_idx < 2 else 0
+
+                
 
                 if event.key == pygame.K_SPACE:
                    self.judge_movement()
@@ -97,16 +109,16 @@ class Maingame(Scene):
 
         if self.option_idx == 0:
             self.player.state["left"] = True
-            self.map.player_idx = max(0, self.map.player_idx - 1)
+            self.map.curr_player_idx = max(0, self.map.curr_player_idx - 1)
         
-            if self.map.obj_list[self.map.player_idx].type == 'player':
-                self.map.player_idx -= 1
+            if self.map.obj_list[self.map.curr_player_idx].type == 'player':
+                self.map.curr_player_idx -= 1
 
         if self.option_idx == 2:
             self.player.state["right"] = True
-            self.map.player_idx = min(len(self.map.obj_list), self.map.player_idx + 1)
+            self.map.curr_player_idx = min(len(self.map.obj_list), self.map.curr_player_idx + 1)
 
-            if self.map.obj_list[self.map.player_idx].type == 'player':
-                self.map.player_idx += 1
+            if self.map.obj_list[self.map.curr_player_idx].type == 'player':
+                self.map.curr_player_idx += 1
 
         self.option_idx = 1

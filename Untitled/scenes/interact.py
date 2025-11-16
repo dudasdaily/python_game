@@ -68,7 +68,8 @@ class Interact(Scene):
             self.box_queue.append(InteractBox(self.game, self.interect_texts))
         
         if not self.box_queue:
-            self.game.sm.scenes['maingame'].map.obj_list.remove(self.collided_obj)
+            if self.collided_obj.kill:
+                self.game.sm.scenes['maingame'].map.obj_list.remove(self.collided_obj)
             self.game.sm.scenes['maingame'].map.update()
             self.__init__(self.game, self.manager)
             self.manager.go_to("maingame", None)

@@ -7,6 +7,7 @@ class Map:
         self.game = game
         self.player = player
         self.player_idx = 0
+        self.curr_player_idx = 0
         self.num_of_object = None
         # self.obj_list = [self.player, Hp_Potion(self.game, 'hp_potion', (60, 90), (0, 0)), Ap_Potion(self.game, 'ap_potion', (60, 90), (0, 0)), Boss(self.game, 'boss', (90, 120), (0, 0))]
         self.obj_list = [self.player, Enemy(self.game, 'enemy', (60, 90), (0, 0)), Enemy(self.game, 'enemy', (60, 90), (0, 0))]
@@ -47,6 +48,7 @@ class Map:
 
             if obj == self.player:
                 self.player_idx = i
+                self.curr_player_idx = i
 
     def update(self):
         for i, obj in enumerate(self.obj_list):
