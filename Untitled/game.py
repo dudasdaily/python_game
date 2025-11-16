@@ -49,6 +49,8 @@ class Game:
             scene.update(dt)
             scene.render(self.display)
 
+            # print(self.sm.current_scene)
+
             # 화면 렌더링
             pygame.transform.scale(self.display, self.screen.get_size(), self.screen)
             pygame.display.update()

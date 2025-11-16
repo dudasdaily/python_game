@@ -5,6 +5,7 @@ from scenes.scene import Scene
 class Battle(Scene):
     def __init__(self, game, manager):
         super().__init__(game, manager)
+        self.collided_obj = None
 
     def handle_events(self, events):
         for event in events:
@@ -17,7 +18,8 @@ class Battle(Scene):
                 pass
 
     def update(self, dt):
-        pass
+        if not self.collided_obj:
+            return
 
     def render(self, surf):
         surf.fill((0, 0, 0))

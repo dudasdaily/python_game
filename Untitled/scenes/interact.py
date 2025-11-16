@@ -1,4 +1,5 @@
 from ast import In
+from code import interact
 import pygame
 import sys
 
@@ -15,9 +16,9 @@ class Interact(Scene):
         self.collided_obj = None # maingame에서 sm.go_to(obj)로 초기화
         
         self.texts = [] # 텍스트 박스(TextBox)의 내용
-        self.interect_texts = [] # 상호작용 박스(InteractBox)의 내용
+        self.interact_texts = [] # 상호작용 박스(InteractBox)의 내용
 
-        self.interect_idx = 0
+        self.interact_idx = 0
         self.init_cnt = 0
 
         self.box_queue = [] # Box들을 담은 순서
@@ -32,12 +33,12 @@ class Interact(Scene):
                 box = self.box_queue[0]
 
                 if event.key == pygame.K_LEFT and isinstance(box, InteractBox):
-                    self.interect_idx = max(0, self.interect_idx - 1)
-                    print(self.interect_idx)
+                    self.interact_idx = max(0, self.interact_idx - 1)
+                    print(self.interact_idx)
                     
                 if event.key == pygame.K_RIGHT and isinstance(box, InteractBox):
-                    self.interect_idx = min(len(self.interect_texts) - 1, self.interect_idx + 1)
-                    print(self.interect_idx)
+                    self.interact_idx = min(len(self.interact_texts) - 1, self.interact_idx + 1)
+                    print(self.interact_idx)
                     
                 if event.key == pygame.K_SPACE:
                     if isinstance(box, TextBox):
@@ -61,24 +62,28 @@ class Interact(Scene):
             for texts in self.collided_obj.texts:
                 self.texts.append(texts.split('\n'))
 
-            self.interect_texts = self.collided_obj.interact_text.split('\n')
+            self.interact_texts = self.collided_obj.interact_text.split('\n')
 
             for text in self.texts:
                 self.box_queue.append(TextBox(self.game, text))
 
-            self.box_queue.append(InteractBox(self.game, self.interect_texts))
+            self.box_queue.append(InteractBox(self.game, self.interact_texts))
         
         if not self.box_queue:
             if self.collided_obj.kill:
                 self.game.sm.scenes['maingame'].map.obj_list.remove(self.collided_obj)
             self.game.sm.scenes['maingame'].map.update()
             self.__init__(self.game, self.manager)
-            self.manager.go_to("maingame", None)
 
-        # print(f'len: {len(self.box_queue)}, texts: {self.texts}, interect_texts: {self.interect_texts}')
+            if self.game.sm.current_scene == self.game.sm.scenes["interact"]:
+                self.manager.go_to("maingame", None)
+                
+                
+
+        # print(f'len: {len(self.box_queue)}, texts: {self.texts}, interact_texts: {self.interact_texts}')
 
         for box in self.box_queue:
-            box.update(self.interect_idx)
+            box.update(self.interact_idx)
 
     def render(self, surf):
         # 베이스 씬 렌더링
@@ -88,4 +93,7 @@ class Interact(Scene):
             self.box_queue[0].render(surf)
 
     def judge_interact(self):
-        if self.inter
+        if '싸운다' in self.interact_texts[self.interact_idx]:
+            self.game.sm.go_to("battle", self.collided_obj)
+
+        

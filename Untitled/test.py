@@ -1,3 +1,1 @@
-x = '123'
-
-print(x.split('\n'))
+print('싸운다' in '1. 싸운다')
