@@ -67,6 +67,7 @@ class Maingame(Scene):
         # 충돌 감지
         for obj in self.map.obj_list.copy():            
             if self.player.handle_collision(obj):
+                print(f'충돌 시 player의 pos : {self.player.pos}')
                 self.game.sm.go_to("interact", obj)
 
         self.camera.follow()

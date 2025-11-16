@@ -32,13 +32,18 @@ class Interact(Scene):
                 if event.key == pygame.K_RIGHT:
                     pass
                 if event.key == pygame.K_SPACE and self.box_queue:
-                    if isinstance(self.box_queue[0], TextBox):
+                    box = self.box_queue[0]
+
+                    if isinstance(box, TextBox):
                         self.box_queue.pop(0)
 
-                    if isinstance(self.box_queue[0], InteractBox):
+                    # !!!!수정 필요!!!!
+                    elif isinstance(box, InteractBox):
                         self.game.sm.scenes['maingame'].map.obj_list.remove(self.collided_obj)
                         self.game.sm.scenes['maingame'].map.update()
                         self.box_queue.pop(0)
+                        print(f'충돌 끝났을 때 player의 pos : {self.game.sm.scenes["maingame"].player.pos}')
+
 
                     
             if event.type == pygame.KEYUP:
@@ -47,7 +52,7 @@ class Interact(Scene):
     def update(self, dt):
         self.game.sm.scenes['maingame'].update(dt)
 
-        # 플레이어가 객체와 충돌 했을 때!
+        # 플레이어가 객체와 충돌 했을 때 1번만 초기화!
         if self.collided_obj and not self.init_cnt:
             self.init_cnt += 1
 
@@ -60,12 +65,14 @@ class Interact(Scene):
                 self.box_queue.append(TextBox(self.game, text))
 
             self.box_queue.append(InteractBox(self.game, self.interect_texts))
+
+            print(self.interect_texts)
         
         if not self.box_queue:
             self.__init__(self.game, self.manager)
             self.manager.go_to("maingame", None)
 
-        print(f'len: {len(self.box_queue)}, texts: {self.texts}, interect_texts: {self.interect_texts}')
+        # print(f'len: {len(self.box_queue)}, texts: {self.texts}, interect_texts: {self.interect_texts}')
 
         for box in self.box_queue:
             box.update()
