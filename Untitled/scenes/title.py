@@ -25,7 +25,7 @@ class Title(Scene):
             if event.type == pygame.KEYDOWN:
                 pass
                 if event.key == pygame.K_SPACE:
-                    self.manager.go_to("maingame")
+                    self.manager.go_to("maingame", None)
 
     def update(self, dt):
         self.elasped_time += dt

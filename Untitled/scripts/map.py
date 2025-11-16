@@ -8,26 +8,35 @@ class Map:
         self.player = player
         self.player_idx = 0
         self.num_of_object = None
-        self.obj_list = [self.player, Hp_Potion(self.game, 'hp_potion', (60, 90), (0, 0)), Ap_Potion(self.game, 'ap_potion', (60, 90), (0, 0)), Boss(self.game, 'boss', (90, 120), (0, 0))]
+        # self.obj_list = [self.player, Hp_Potion(self.game, 'hp_potion', (60, 90), (0, 0)), Ap_Potion(self.game, 'ap_potion', (60, 90), (0, 0)), Boss(self.game, 'boss', (90, 120), (0, 0))]
+        self.obj_list = [self.player, Hp_Potion(self.game, 'hp_potion', (60, 90), (0, 0)), Enemy(self.game, 'enemy', (60, 90), (0, 0))]
 
     def generate_object(self):
-        self.num_of_object = random.randint(5, 10)
+        # self.num_of_object = random.randint(5, 10)
 
-        for i in range(self.num_of_object):
-            r = random.random()
+        # for i in range(self.num_of_object):
+        #     r = random.random()
 
-            if r <= 0.5:
-                self.obj_list.append(Enemy(self.game, 'enemy', (60, 90), (0, 0)))
-            elif 0.5 < r <= 0.7:
-                self.obj_list.append(Hp_Potion(self.game, 'hp_potion', (60, 90), (0, 0)))
-            elif 0.7 < r <= 0.9:
-                self.obj_list.append(Ap_Potion(self.game, 'ap_potion', (60, 90), (0, 0)))
-            else:
-                self.obj_list.append(Chest(self.game, 'chest', (60, 90), (0, 0)))
+        #     if r <= 0.5:
+        #         self.obj_list.append(Enemy(self.game, 'enemy', (60, 90), (0, 0)))
+        #     elif 0.5 < r <= 0.7:
+        #         self.obj_list.append(Hp_Potion(self.game, 'hp_potion', (60, 90), (0, 0)))
+        #     elif 0.7 < r <= 0.9:
+        #         self.obj_list.append(Ap_Potion(self.game, 'ap_potion', (60, 90), (0, 0)))
+        #     else:
+        #         self.obj_list.append(Chest(self.game, 'chest', (60, 90), (0, 0)))
 
         self.num_of_object = len(self.obj_list)
 
         random.shuffle(self.obj_list)
+
+        if self.obj_list[0] is self.player:
+            swap_idx = random.randint(1, self.num_of_object - 2)
+            self.obj_list[0], self.obj_list[swap_idx] = self.obj_list[swap_idx], self.obj_list[0]
+
+        elif self.obj_list[-1] is self.player:
+            swap_idx = random.randint(1, self.num_of_object - 2)
+            self.obj_list[-1], self.obj_list[swap_idx] = self.obj_list[swap_idx], self.obj_list[-1]
 
         for i, obj in enumerate(self.obj_list):
             x_pos = self.game.display.get_width() * (i+1) - obj.size[0] // 2
@@ -42,4 +51,3 @@ class Map:
         for obj in self.obj_list:
             rect = obj.rect()
             pygame.draw.rect(surf, (0, 0, 0), pygame.Rect(rect.x - offset[0], rect.y - offset[1], rect.width, rect.height), 2)
-        

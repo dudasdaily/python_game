@@ -13,8 +13,7 @@ class Game:
         self.screen = pygame.display.set_mode((640, 480))
         self.display =pygame.Surface((320, 240))
         self.clock = pygame.time.Clock()
-
-        # 에셋 관련 설정
+        
         self.assets = {
             'background' : load_image('background.png'),
             'player/idle' : Animation(load_images('player/idle'), img_dur=30, loop=True),

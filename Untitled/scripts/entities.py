@@ -6,6 +6,7 @@ class Object:
         self.type = e_type
         self.size = size
         self.pos = list(pos)
+        self.interact_text = ''
 
     def update(self):
         pass
@@ -56,6 +57,7 @@ class Player(Entity):
             "left" : False,
             "right" : False,
             "moving" : False,
+            "collision" : True,
         }
         
         self.flip = False
@@ -87,24 +89,24 @@ class Player(Entity):
 
     def handle_collision(self, obj):
         if self.defying_collision:
-            return
+            return False
         
         # 오브젝트와 충돌을 한다면
-        if abs(obj.rect().centerx) - 3 <= abs(self.rect().centerx) <= abs(obj.rect().centerx) + 3 and obj.type != 'player':
-            # print(obj.type)
+        if abs(obj.rect().centerx) - 3 <= abs(self.rect().centerx) <= abs(obj.rect().centerx) + 3 and obj.type != 'player' and not self.state["collision"]:
+            print(obj.type)
             self.state["moving"] = False
+            self.state["collision"] = True
 
-        # if obj.rect().colliderect(self.rect()) and obj.type != 'player':
-        #     print(obj.type)
-        #     self.state["moving"] = False
 
 class Enemy(Entity):
     def __init__(self, game, e_type, size, pos):
         super().__init__(game, e_type, size, pos)
+        self.interact_text = '1. 싸운다\n2. 도망간다'
 
 class Boss(Entity):
     def __init__(self, game, e_type, size, pos):
         super().__init__(game, e_type, size, pos)
+        self.interact_text = '1. 싸운다\n2. 도망간다'
 
 class Chest(Object):
     def __init__(self, game, e_type, size, pos):
