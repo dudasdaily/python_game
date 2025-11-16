@@ -1,6 +1,17 @@
+import pygame
+
 class Hud:
-    def __init__(self):
-        pass
+    def __init__(self, text=None):
+        self.font = None
+        self.lines = text.split('\n')
+        self.y_offset = 30
+        self.line_spacing = 30
+
+    def render(self, surf):
+        for line in self.lines:
+            text_surface = self.font.render(line, False, (255, 255, 255))
+            surf.blit(text_surface, (50, self.y_offset))
+            self.y_offset += self.line_spacing
 
 class Player_hud:
     def __init__(self, game):
@@ -29,12 +40,16 @@ class Player_hud:
         elif self.state == [0, 0, 1]:
             surf.blit(self.game.assets['arrow/right_select'].copy(), (0, 0))
 
-class Interact:
+class Interact(Hud):
     SELECT_COLOR = (0, 0, 0)
     UNSELECT_COLOR = (169, 169, 169)
 
     def __init__(self, game):
         self.game = game
+        
+        x_pos = 10
+        # y_pos = self.game.display.get_height() - 
+        self.text_box = pygame.Rect()
         
     def update(self):
         pass
