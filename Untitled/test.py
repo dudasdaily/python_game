@@ -1,1 +1,2 @@
-print('싸운다' in '1. 싸운다')
+for i in range(5, -1, -1):
+    print(i)

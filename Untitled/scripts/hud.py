@@ -5,7 +5,7 @@ import pygame
 class Hud:
     def __init__(self, game, text=None):
         self.game = game
-        self.font = pygame.font.Font('data/fonts/NeoDunggeunmoPro-Regular.ttf', 12)
+        self.font = pygame.font.Font('data/fonts/NeoDunggeunmoPro-Regular.ttf', 16)
         self.lines = text.split('\n')
         self.y_offset = 10
         self.line_spacing = 20
@@ -17,64 +17,46 @@ class Hud:
             self.y_offset += self.line_spacing
 
 class Player_hud:
-    def __init__(self, game):
+    def __init__(self, game, player):
         self.game = game
         self.state = [0, 0, 0]
         self.action = ''
+        self.player = player
 
-    def update(self, option_idx):
-        # 현재 플레이어의 위치를 기반으로 좌, 우 중 어디를 갈 수 있는지 판단 한 후 self.state를 업데이트
-        self.curr_idx = self.game.sm.scenes["maingame"].map.curr_player_idx
-        self.obj_len = len(self.game.sm.scenes["maingame"].map.obj_list)
+        self.interact_button_render = True
 
-        self.state = [0, 0, 0]
+    def update(self, option_idx, can_go_left, can_go_right):
+        if option_idx == 0 and can_go_left:
+            self.state = [1, 0, 0]
 
-        next = self.curr_idx
-
-        if option_idx == 0:
-            next -= 1
-        elif option_idx == 2:
-            next += 1
-
-        # 목적지가 리스트 범위를 벗어난 경우
-        if next < 0 or next >= self.obj_len:
-            return -1
-        
-        # 만약 다음 목적지가 플레이어의 초기 위치라면 한칸 더 이동
-        if self.game.sm.scenes["maingame"].map.obj_list[next].type == 'player':
-            if option_idx == 0:
-                next -= 1
-            elif option_idx == 2:
-                next += 1
-
-        # 목적지가 리스트 범위를 벗어난 경우
-        if next < 0 or next >= self.obj_len:
-            return -1
-        
-        self.state[option_idx] = 1 # 이동 조건을 판단한 후 안전한 상태이므로 업데이트
-        return next
-
-    def render(self, surf):
-        if self.obj_len == 1:
-            return
-        
-        if self.obj_len == 2 and 0 <= self.curr_idx <= self.obj_len - 1:
-            return
-        
-        if self.curr_idx == 0:
-            surf.blit(self.game.assets['arrow/right'].copy(), (0, 0))
-
-        elif self.curr_idx >= self.obj_len - 1:
-            surf.blit(self.game.assets['arrow/left'].copy(), (0, 0))
+        elif option_idx == 2 and can_go_right:
+            self.state = [0, 0, 1]
 
         else:
+            self.state = [0, 1, 0]
+
+        # maingame.py의 option_idx와 동기화
+        for i, x in enumerate(self.state):
+            if x:
+                return i
+
+    def render(self, surf, can_go_left, can_go_right, offset=(0, 0)):
+        if can_go_left:
             surf.blit(self.game.assets['arrow/left'].copy(), (0, 0))
+
+        if can_go_right:
             surf.blit(self.game.assets['arrow/right'].copy(), (0, 0))
 
         if self.state == [1, 0, 0]:
             surf.blit(self.game.assets['arrow/left_select'].copy(), (0, 0))
-        elif self.state == [0, 0, 1]:
+
+        if self.state == [0, 0, 1]:
             surf.blit(self.game.assets['arrow/right_select'].copy(), (0, 0))
+
+        if self.state == [0, 1, 0] and self.game.sm.scenes['maingame'].collided_obj and self.interact_button_render:
+            font = pygame.font.Font('data/fonts/NeoDunggeunmoPro-Regular.ttf', 16)
+            render_font = font.render('Press Space to interact', False, (255, 255, 255), (0, 0, 0))
+            surf.blit(render_font, (self.player.rect().centerx - render_font.get_width() // 2 - offset[0], self.player.rect().top - 30 - offset[1]))
 
 class InteractMenu(Hud):
     TXTBOX_COLOR = (255, 255, 255, 200)

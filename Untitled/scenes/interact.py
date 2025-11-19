@@ -3,6 +3,7 @@ from code import interact
 import pygame
 import sys
 
+from scripts.entities import Hp_Potion, Ap_Potion
 from scripts.hud import TextBox, InteractBox
 from scenes.scene import Scene
 
@@ -70,13 +71,20 @@ class Interact(Scene):
             self.box_queue.append(InteractBox(self.game, self.interact_texts))
         
         if not self.box_queue:
-            if self.collided_obj.kill:
-                self.game.sm.scenes['maingame'].map.obj_list.remove(self.collided_obj)
-            self.game.sm.scenes['maingame'].map.update()
+            if isinstance(self.collided_obj, Hp_Potion) or isinstance(self.collided_obj, Ap_Potion):
+                self.collided_obj.kill = True
+            
+            temp_obj = self.collided_obj
+
+            # self.game.sm.scenes['maingame'].map.update()
             self.__init__(self.game, self.manager)
 
             if self.game.sm.current_scene == self.game.sm.scenes["interact"]:
-                self.manager.go_to("maingame", None)
+                self.game.sm.scenes["maingame"].p_hud.interact_button_render = True
+                if temp_obj.kill:
+                    self.manager.go_to("maingame", None)
+                else:
+                    self.manager.go_to("maingame", temp_obj)
                 
         # print(f'len: {len(self.box_queue)}, texts: {self.texts}, interact_texts: {self.interact_texts}')
 

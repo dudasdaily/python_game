@@ -54,9 +54,3 @@ class Map:
         for i, obj in enumerate(self.obj_list):
             if obj == self.player:
                 self.player_idx = i
-
-    def render(self, surf, offset=(0, 0)):
-        pass
-        # for obj in self.obj_list:
-        #     rect = obj.rect()
-        #     pygame.draw.rect(surf, (0, 0, 0), pygame.Rect(rect.x - offset[0], rect.y - offset[1], rect.width, rect.height), 2)

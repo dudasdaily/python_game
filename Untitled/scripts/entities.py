@@ -90,25 +90,28 @@ class Player(Entity):
     def render(self, surf, offset=(0, 0)):
         surf.blit(pygame.transform.flip(self.animation.img(), self.flip, False), (self.pos[0] - offset[0] - self.anim_offset[0], self.pos[1] - offset[1] - self.anim_offset[1]))
 
-    def handle_collision(self, obj):
-        if self.defying_collision:
+    def handle_collision(self, obj, can_go_left, can_go_right):
+        if self.defying_collision and (can_go_left or can_go_right):
             return False
         
-        # 오브젝트와 충돌을 한다면
+        # 오브젝트와 충돌을 하는 순간!
         if abs(obj.rect().centerx) - 3 <= abs(self.rect().centerx) <= abs(obj.rect().centerx) + 3 and obj.type != 'player' and not self.state["collision"]:
+            if isinstance(obj, Player) or obj.kill:
+                return False
+
             if isinstance(obj, Hp_Potion):
-                obj.kill = True
                 self.hp = min(self.max_hp, self.hp + 2)
 
             if isinstance(obj, Ap_Potion):
-                obj.kill = True
                 self.ap = min(self.max_ap, self.ap + 2)
 
             print(obj.type)
             self.state["moving"] = False
             self.state["collision"] = True
 
-            return True
+            return obj
+
+        return False # 충돌 안했으면 None
 
 class Enemy(Entity):
     def __init__(self, game, e_type, size, pos):
