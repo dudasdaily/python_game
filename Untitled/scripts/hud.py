@@ -36,10 +36,10 @@ class Player_hud:
         else:
             self.state = [0, 1, 0]
 
-        # maingame.py의 option_idx와 동기화
-        for i, x in enumerate(self.state):
-            if x:
-                return i
+        # # maingame.py의 option_idx와 동기화
+        # for i, x in enumerate(self.state):
+        #     if x:
+        #         return i
 
     def render(self, surf, can_go_left, can_go_right, offset=(0, 0)):
         if can_go_left:

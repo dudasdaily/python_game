@@ -2,6 +2,8 @@ import random
 import pygame
 from scripts.entities import Boss, Enemy, Chest, Hp_Potion, Ap_Potion
 
+GRID_SIZE = 400 # 오브젝트 사이의 거리
+
 class Map:
     def __init__(self, game, player):
         self.game = game
@@ -40,8 +42,9 @@ class Map:
             swap_idx = random.randint(1, self.num_of_object - 2)
             self.obj_list[-1], self.obj_list[swap_idx] = self.obj_list[swap_idx], self.obj_list[-1]
 
+        # 오브젝트를 맵에 배치
         for i, obj in enumerate(self.obj_list):
-            x_pos = self.game.display.get_width() * (i+1) - obj.size[0] // 2
+            x_pos = GRID_SIZE * (i+1) - obj.size[0] // 2
             y_pos = self.game.display.get_height() // 2
 
             obj.pos = [x_pos, y_pos]

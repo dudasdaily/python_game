@@ -5,7 +5,7 @@ import sys
 from scenes.scenemanager import SceneManager
 from scripts.utils import load_image, load_images, Animation
 
-FRAME = 30
+FRAME = 20
 pygame.init()
 
 class Game:

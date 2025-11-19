@@ -70,7 +70,7 @@ class Maingame(Scene):
                 continue
             self.can_go_right = True
 
-        self.option_idx = self.p_hud.update(self.option_idx, self.can_go_left, self.can_go_right) # p_hud.state와 동기화!
+        self.p_hud.update(self.option_idx, self.can_go_left, self.can_go_right)
         self.player.update(dt)
 
         # 충돌 감지
