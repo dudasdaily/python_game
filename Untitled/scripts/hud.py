@@ -1,5 +1,6 @@
 from pydoc import text
 from unittest import TextTestResult
+from networkx import paley_graph
 import pygame
 
 class Hud:
@@ -153,35 +154,38 @@ class InteractBox(Box):
         surf.blit(self.box, (self.box_x, self.box_y))
         pass
 
-
 class Battle_options:
     def __init__(self):
         pass
 
 class HpHud:
-    def __init__(self, game, pos=(0, 0)):
+    def __init__(self, game, player, pos=(0, 0)):
         self.game = game
+        self.player = player
         self.animation = self.game.assets['hp'].copy()
         self.pos = pos
 
     def update(self):
-        self.animation.update()
+        # self.animation.update()
+        pass
 
     def render(self, surf):
         x_offset = 0
-        for i in range(self.game.sm.scenes['maingame'].player.hp):
-            scaled_img = pygame.transform.scale(self.animation.img(), (32, 32))
+        for i in range(self.player.hp):
+            scaled_img = pygame.transform.scale(self.animation.img(), (26, 26))
             surf.blit(scaled_img, (self.pos[0] + x_offset, self.pos[1]))
-            x_offset += 16
+            x_offset += 22
 
-class ApHud(HpHud):
-    def __init__(self, game, pos=(0, 0)):
-        super().__init__(game, pos)
+class ApHud:
+    def __init__(self, game, player, pos=(0, 0)):
+        self.game = game
+        self.player = player
         self.animation = self.game.assets['ap'].copy()
+        self.pos = pos
 
     def render(self, surf):
         x_offset = 0
-        for i in range(self.game.sm.scenes['maingame'].player.ap):
+        for i in range(self.player.ap):
             scaled_img = pygame.transform.scale(self.animation.img(), (32, 32))
             surf.blit(scaled_img, (self.pos[0] + x_offset, self.pos[1]))
             x_offset += 16

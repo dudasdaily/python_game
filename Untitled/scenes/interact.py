@@ -77,7 +77,7 @@ class Interact(Scene):
 
             if isinstance(self.collided_obj, Ap_Potion):
                 self.collided_obj.kill = True
-                self.game.sm.scenes['maingame'].player.hp = min(self.game.sm.scenes['maingame'].player.max_hp, self.game.sm.scenes['maingame'].player.ap + 2)
+                self.game.sm.scenes['maingame'].player.ap = min(self.game.sm.scenes['maingame'].player.max_ap, self.game.sm.scenes['maingame'].player.ap + 2)
             
             temp_obj = self.collided_obj
 

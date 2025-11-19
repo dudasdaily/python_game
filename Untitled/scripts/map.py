@@ -10,7 +10,7 @@ class Map:
         self.curr_player_idx = 0
         self.num_of_object = None
         # self.obj_list = [self.player, Hp_Potion(self.game, 'hp_potion', (60, 90), (0, 0)), Ap_Potion(self.game, 'ap_potion', (60, 90), (0, 0)), Boss(self.game, 'boss', (90, 120), (0, 0))]
-        self.obj_list = [self.player, Enemy(self.game, 'enemy', (60, 90), (0, 0)), Hp_Potion(self.game, 'hp_potion', (60, 90), (0, 0))]
+        self.obj_list = [self.player, Enemy(self.game, 'enemy', (60, 90), (0, 0)), Ap_Potion(self.game, 'ap_potion', (60, 90), (0, 0))]
 
 
     def generate_object(self):

@@ -17,6 +17,9 @@ class Maingame(Scene):
         self.map = Map(game, self.player)
         self.map.generate_object()
 
+        self.Hp_bar = HpHud(game, self.player, (10, 10))
+        self.Ap_bar = ApHud(game, self.player, (10, 35))
+
         print(self.map.obj_list)
 
         # for obj in self.map.obj_list:
@@ -94,6 +97,8 @@ class Maingame(Scene):
                 obj.render(surf, self.camera.offset)
 
         self.player.render(surf, self.camera.offset)
+        self.Hp_bar.render(surf)
+        self.Ap_bar.render(surf)
 
         # 왼쪽, 오른쪽 선택
         if not self.player.state["moving"]:
@@ -129,5 +134,7 @@ class Maingame(Scene):
 
             if self.map.obj_list[self.map.curr_player_idx].type == 'player':
                 self.map.curr_player_idx += 1
+
+        self.player.ap = max(0, self.player.ap - 1)
 
         self.option_idx = 1

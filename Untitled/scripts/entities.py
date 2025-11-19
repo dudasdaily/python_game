@@ -99,11 +99,11 @@ class Player(Entity):
             if isinstance(obj, Player) or obj.kill:
                 return False
 
-            if isinstance(obj, Hp_Potion):
-                self.hp = min(self.max_hp, self.hp + 2)
+            # if isinstance(obj, Hp_Potion):
+            #     self.hp = min(self.max_hp, self.hp + 2)
 
-            if isinstance(obj, Ap_Potion):
-                self.ap = min(self.max_ap, self.ap + 2)
+            # if isinstance(obj, Ap_Potion):
+            #     self.ap = min(self.max_ap, self.ap + 2)
 
             print(obj.type)
             self.state["moving"] = False
