@@ -71,8 +71,13 @@ class Interact(Scene):
             self.box_queue.append(InteractBox(self.game, self.interact_texts))
         
         if not self.box_queue:
-            if isinstance(self.collided_obj, Hp_Potion) or isinstance(self.collided_obj, Ap_Potion):
+            if isinstance(self.collided_obj, Hp_Potion):
                 self.collided_obj.kill = True
+                self.game.sm.scenes['maingame'].player.hp = min(self.game.sm.scenes['maingame'].player.max_hp, self.game.sm.scenes['maingame'].player.hp + 2)
+
+            if isinstance(self.collided_obj, Ap_Potion):
+                self.collided_obj.kill = True
+                self.game.sm.scenes['maingame'].player.hp = min(self.game.sm.scenes['maingame'].player.max_hp, self.game.sm.scenes['maingame'].player.ap + 2)
             
             temp_obj = self.collided_obj
 

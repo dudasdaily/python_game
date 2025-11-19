@@ -137,6 +137,7 @@ class Hp_Potion(Object):
         super().__init__(game, e_type, size, pos)
         self.animation = self.game.assets['hp'].copy()
         self.texts = ['HP 포션이다!']
+        self.interact_text = 'HP가 2만큼 회복되었다!'
 
     def update(self, dt):
         self.animation.update()
@@ -150,6 +151,8 @@ class Ap_Potion(Object):
         super().__init__(game, e_type, size, pos)
         self.animation = self.game.assets['ap'].copy()
         self.texts = ['AP 포션이다!']
+        self.interact_text = 'AP가 2만큼 회복되었다!'
+
 
     def update(self, dt):
         self.animation.update()
