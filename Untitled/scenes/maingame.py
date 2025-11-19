@@ -4,7 +4,7 @@ import sys
 from scenes.scene import Scene
 from scripts.camera import Camera
 from scripts.entities import Player
-from scripts.hud import Player_hud
+from scripts.hud import Player_hud, HpHud, ApHud
 from scripts.map import Map
 
 class Maingame(Scene):
@@ -33,37 +33,11 @@ class Maingame(Scene):
                 sys.exit()
 
             if event.type == pygame.KEYDOWN and not self.player.state["moving"]:
-                if event.key == pygame.K_LEFT and len(self.map.obj_list) > 1:
-                    if self.map.curr_player_idx == 0:
-                        self.option_idx = max(1, self.option_idx - 1)
-                    else:
-                        self.option_idx = max(0, self.option_idx - 1)
+                if event.key == pygame.K_LEFT:
+                    self.option_idx = max(0, self.option_idx - 1)
 
-                    # if self.map.player_idx == 0 and len(self.map.obj_list) == 1:
-                    #     pass
-                    # elif self.map.player_idx == 0:
-                    #     self.option_idx = self.option_idx - 1 if self.option_idx > 1 else 2
-                    # elif self.map.player_idx == len(self.map.obj_list) - 1:
-                    #     self.option_idx = self.option_idx - 1 if self.option_idx > 0 else 1
-                    # else:
-                    #     self.option_idx = self.option_idx - 1 if self.option_idx > 0 else 2
-
-                if event.key == pygame.K_RIGHT and len(self.map.obj_list) > 1:
-                    if self.map.curr_player_idx == len(self.map.obj_list) - 1:
-                        # self.option_idx = 0
-                        self.option_idx = min(1, self.option_idx + 1)
-                    else:
-                        self.option_idx = min(2, self.option_idx + 1)
-                    # if self.map.player_idx == 0 and len(self.map.obj_list) == 1:
-                    #     pass
-                    # elif self.map.player_idx == 0:
-                    #     self.option_idx = self.option_idx + 1 if self.option_idx < 2 else 1
-                    # elif self.map.player_idx == len(self.map.obj_list) - 1:
-                    #     self.option_idx = self.option_idx + 1 if self.option_idx < 1 else 0
-                    # else:
-                    #     self.option_idx = self.option_idx + 1 if self.option_idx < 2 else 0
-
-                
+                if event.key == pygame.K_RIGHT:
+                    self.option_idx = min(2, self.option_idx + 1)
 
                 if event.key == pygame.K_SPACE:
                    self.judge_movement()
@@ -73,13 +47,17 @@ class Maingame(Scene):
                     print(self.map.player_idx)
 
     def update(self, dt):
-        self.p_hud.update(self.option_idx)
+        self.next_idx = self.p_hud.update(self.option_idx)
+        print(self.next_idx)
         self.player.update(dt)
 
         # 충돌 감지
-        for obj in self.map.obj_list.copy():            
+        for obj in self.map.obj_list.copy():
             if self.player.handle_collision(obj):
                 self.game.sm.go_to("interact", obj)
+            
+            if obj.type != 'player':
+                obj.update(dt)
 
         self.camera.follow()
 
@@ -92,6 +70,11 @@ class Maingame(Scene):
         surf.blit(self.game.assets['background'], (wrapping_x, y_pos))
 
         self.map.render(surf, self.camera.offset)
+        
+        for obj in self.map.obj_list:
+            if obj.type != 'player':
+                obj.render(surf, self.camera.offset)        
+
         self.player.render(surf, self.camera.offset)
 
         # 왼쪽, 오른쪽 선택
@@ -107,18 +90,25 @@ class Maingame(Scene):
 
         self.player.defying_collision = self.player.DEFYING_TIME
 
-        if self.option_idx == 0:
-            self.player.state["left"] = True
-            self.map.curr_player_idx = max(0, self.map.curr_player_idx - 1)
+        if self.next_idx != -1:
+            if self.next_idx < self.map.curr_player_idx:
+                self.player.state["left"] = True
+            elif self.next_idx > self.map.curr_player_idx:
+                self.player.state["right"] = True
+            self.map.curr_player_idx = self.next_idx
+
+        # if self.option_idx == 0:
+        #     self.player.state["left"] = True
+        #     self.map.curr_player_idx = max(0, self.map.curr_player_idx - 1)
         
-            if self.map.obj_list[self.map.curr_player_idx].type == 'player':
-                self.map.curr_player_idx -= 1
+        #     if self.map.obj_list[self.map.curr_player_idx].type == 'player':
+        #         self.map.curr_player_idx -= 1
 
-        if self.option_idx == 2:
-            self.player.state["right"] = True
-            self.map.curr_player_idx = min(len(self.map.obj_list), self.map.curr_player_idx + 1)
+        # if self.option_idx == 2:
+        #     self.player.state["right"] = True
+        #     self.map.curr_player_idx = min(len(self.map.obj_list) - 1, self.map.curr_player_idx + 1)
 
-            if self.map.obj_list[self.map.curr_player_idx].type == 'player':
-                self.map.curr_player_idx += 1
+        #     if self.map.obj_list[self.map.curr_player_idx].type == 'player':
+        #         self.map.curr_player_idx += 1
 
         self.option_idx = 1

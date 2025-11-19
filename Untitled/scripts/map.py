@@ -10,7 +10,7 @@ class Map:
         self.curr_player_idx = 0
         self.num_of_object = None
         # self.obj_list = [self.player, Hp_Potion(self.game, 'hp_potion', (60, 90), (0, 0)), Ap_Potion(self.game, 'ap_potion', (60, 90), (0, 0)), Boss(self.game, 'boss', (90, 120), (0, 0))]
-        self.obj_list = [self.player, Enemy(self.game, 'enemy', (60, 90), (0, 0)), Enemy(self.game, 'enemy', (60, 90), (0, 0))]
+        self.obj_list = [self.player, Enemy(self.game, 'enemy', (60, 90), (0, 0)), Hp_Potion(self.game, 'hp_potion', (60, 90), (0, 0))]
 
 
     def generate_object(self):
@@ -56,6 +56,7 @@ class Map:
                 self.player_idx = i
 
     def render(self, surf, offset=(0, 0)):
-        for obj in self.obj_list:
-            rect = obj.rect()
-            pygame.draw.rect(surf, (0, 0, 0), pygame.Rect(rect.x - offset[0], rect.y - offset[1], rect.width, rect.height), 2)
+        pass
+        # for obj in self.obj_list:
+        #     rect = obj.rect()
+        #     pygame.draw.rect(surf, (0, 0, 0), pygame.Rect(rect.x - offset[0], rect.y - offset[1], rect.width, rect.height), 2)

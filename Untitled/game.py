@@ -1,3 +1,4 @@
+from json import load
 import pygame
 import sys
 
@@ -26,10 +27,13 @@ class Game:
             'arrow/left_select' :load_image('ui/arrow/left_select/00.png'),
             'arrow/right' :load_image('ui/arrow/right/00.png'),
             'arrow/right_select' :load_image('ui/arrow/right_select/00.png'),
+            # Hp/Ap
+            'hp' : Animation(load_images('ui/hp'), img_dur=10, loop=True),
+            'ap' : Animation(load_images('ui/ap'), img_dur=10, loop=True),
         }
  
         # Scene 관련 설정
-        self.sm = SceneManager(self, "title") 
+        self.sm = SceneManager(self, "title")  
         # self.sm.current_scene.manager = self.sm
 
     def run(self):

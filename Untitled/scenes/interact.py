@@ -78,8 +78,6 @@ class Interact(Scene):
             if self.game.sm.current_scene == self.game.sm.scenes["interact"]:
                 self.manager.go_to("maingame", None)
                 
-                
-
         # print(f'len: {len(self.box_queue)}, texts: {self.texts}, interact_texts: {self.interact_texts}')
 
         for box in self.box_queue:

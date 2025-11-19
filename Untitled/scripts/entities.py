@@ -14,7 +14,7 @@ class Object:
     def update(self):
         pass
 
-    def render(self):
+    def render(self, offset=(0,0)):
         pass
 
     def rect(self):
@@ -31,7 +31,7 @@ class Entity(Object):
     def update(self, dt):
         pass
 
-    def render(self, surf):
+    def render(self, surf, offset=(0, 0)):
         pass
 
     def set_action(self, action):
@@ -50,7 +50,7 @@ class Player(Entity):
         self.max_ap = 5
         self.ap = self.max_ap
         
-        self.velocity = [200, 2]
+        self.velocity = [150, 2]
         self.anim_offset = (0, 0)
         self.defying_collision = self.DEFYING_TIME
 
@@ -96,6 +96,14 @@ class Player(Entity):
         
         # 오브젝트와 충돌을 한다면
         if abs(obj.rect().centerx) - 3 <= abs(self.rect().centerx) <= abs(obj.rect().centerx) + 3 and obj.type != 'player' and not self.state["collision"]:
+            if isinstance(obj, Hp_Potion):
+                obj.kill = True
+                self.hp = min(self.max_hp, self.hp + 2)
+
+            if isinstance(obj, Ap_Potion):
+                obj.kill = True
+                self.ap = min(self.max_ap, self.ap + 2)
+
             print(obj.type)
             self.state["moving"] = False
             self.state["collision"] = True
@@ -124,9 +132,24 @@ class Chest(Object):
 class Hp_Potion(Object):
     def __init__(self, game, e_type, size, pos):
         super().__init__(game, e_type, size, pos)
+        self.animation = self.game.assets['hp'].copy()
         self.texts = ['HP 포션이다!']
+
+    def update(self, dt):
+        self.animation.update()
+
+    def render(self, surf, offset=(0, 0)):
+        surf.blit(self.animation.img(), (self.pos[0] - offset[0], self.pos[1] - offset[1]))
+
 
 class Ap_Potion(Object):
     def __init__(self, game, e_type, size, pos):
         super().__init__(game, e_type, size, pos)
+        self.animation = self.game.assets['ap'].copy()
         self.texts = ['AP 포션이다!']
+
+    def update(self, dt):
+        self.animation.update()
+
+    def render(self, surf, offset=(0, 0)):
+        surf.blit(self.animation.img(), (self.pos[0] - offset[0], self.pos[1] - offset[1]))
