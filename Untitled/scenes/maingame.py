@@ -42,10 +42,17 @@ class Maingame(Scene):
 
             if event.type == pygame.KEYDOWN and not self.player.state["moving"]:
                 if event.key == pygame.K_LEFT:
-                    self.option_idx = max(0, self.option_idx - 1)
+                    if not self.can_go_left:
+                        self.option_idx = 1
+                    else:
+                        self.option_idx = max(0, self.option_idx - 1)
 
                 if event.key == pygame.K_RIGHT:
-                    self.option_idx = min(2, self.option_idx + 1)
+                    if not self.can_go_right:
+                        self.option_idx = 1
+                    else:
+                        self.option_idx = min(2, self.option_idx + 1)
+                        
 
                 if event.key == pygame.K_SPACE:
                     self.judge_movement()
@@ -75,8 +82,10 @@ class Maingame(Scene):
 
         # 충돌 감지
         for obj in self.map.obj_list:
-            if self.player.handle_collision(obj, self.can_go_left, self.can_go_right):
+            if self.player.rect().colliderect(obj.rect()) and not self.player.defying_collision and obj.type != 'player' and not obj.kill:
                 self.collided_obj = obj
+                self.player.state["moving"] = False
+                self.player.state["collision"] = True
             
             if obj.type != 'player':
                 obj.update(dt)
@@ -105,7 +114,6 @@ class Maingame(Scene):
             self.p_hud.render(surf, self.can_go_left, self.can_go_right, self.camera.offset)
 
     def judge_movement(self):
-        print(self.option_idx, self.collided_obj)
         if self.option_idx == 1 and self.collided_obj:
             self.p_hud.interact_button_render = False
             self.manager.go_to("interact", self.collided_obj)
@@ -114,27 +122,29 @@ class Maingame(Scene):
         elif self.option_idx == 1:
             return
 
-        # 이동 관련
-        self.player.state["moving"] = True
-        self.player.state["collision"] = False
-
-        self.player.defying_collision = self.player.DEFYING_TIME
-
-        if self.option_idx == 0:
+        # 플레이어가 이동가능한지 체크
+        if self.option_idx == 0 and self.can_go_left:
             self.player.state["left"] = True
             self.map.curr_player_idx -= 1
 
             if self.map.obj_list[self.map.curr_player_idx].type == 'player':
                 self.map.curr_player_idx -= 1
+            
+            self.player.ap = max(0, self.player.ap - 1)
+            self.player.state["moving"] = True
+            self.player.state["collision"] = False
+            self.player.defying_collision = self.player.DEFYING_TIME
 
-
-        if self.option_idx == 2:
+        if self.option_idx == 2 and self.can_go_right:
             self.player.state["right"] = True
             self.map.curr_player_idx += 1
 
             if self.map.obj_list[self.map.curr_player_idx].type == 'player':
                 self.map.curr_player_idx += 1
 
-        self.player.ap = max(0, self.player.ap - 1)
+            self.player.ap = max(0, self.player.ap - 1)
+            self.player.state["moving"] = True
+            self.player.state["collision"] = False
+            self.player.defying_collision = self.player.DEFYING_TIME
 
         self.option_idx = 1
