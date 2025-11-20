@@ -6,11 +6,11 @@ from scenes.scenemanager import SceneManager
 from scripts.utils import load_image, load_images, Animation
 
 FRAME = 30
-pygame.init()
 
 class Game:
     def __init__(self):
         # pygame 설정들
+        pygame.init()
         self.screen = pygame.display.set_mode((640, 480))
         self.display =pygame.Surface((320, 240))
         self.clock = pygame.time.Clock()
@@ -61,4 +61,5 @@ class Game:
             pygame.transform.scale(self.display, self.screen.get_size(), self.screen)
             pygame.display.update()
 
-Game().run()
+if __name__ == "__main__":
+    Game().run()
