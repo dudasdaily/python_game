@@ -14,7 +14,7 @@ class Object:
     def update(self, dt):
         pass
 
-    def render(self, offset=(0,0)):
+    def render(self, surf, offset=(0,0)):
         pass
 
     def rect(self):

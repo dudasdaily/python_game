@@ -35,11 +35,9 @@ class Interact(Scene):
 
                 if event.key == pygame.K_LEFT and isinstance(box, InteractBox):
                     self.interact_idx = max(0, self.interact_idx - 1)
-                    print(self.interact_idx)
                     
                 if event.key == pygame.K_RIGHT and isinstance(box, InteractBox):
                     self.interact_idx = min(len(self.interact_texts) - 1, self.interact_idx + 1)
-                    print(self.interact_idx)
                     
                 if event.key == pygame.K_SPACE:
                     if isinstance(box, TextBox):
