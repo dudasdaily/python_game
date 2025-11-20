@@ -3,6 +3,8 @@ import pygame
 from scripts.entities import Boss, Enemy, Chest, Hp_Potion, Ap_Potion
 
 GRID_SIZE = 400 # 오브젝트 사이의 거리
+OBJ_APPEND_MIN = 3
+OBJ_APPEND_MAX = 5
 
 class Map:
     def __init__(self, game, player):
@@ -14,21 +16,20 @@ class Map:
         # self.obj_list = [self.player, Hp_Potion(self.game, 'hp_potion', (60, 90), (0, 0)), Ap_Potion(self.game, 'ap_potion', (60, 90), (0, 0)), Boss(self.game, 'boss', (90, 120), (0, 0))]
         self.obj_list = [self.player, Enemy(self.game, 'enemy', (60, 90), (0, 0)), Ap_Potion(self.game, 'ap_potion', (60, 90), (0, 0))]
 
-
     def generate_object(self):
-        # self.num_of_object = random.randint(5, 10)
+        self.num_of_object = random.randint(OBJ_APPEND_MIN, OBJ_APPEND_MAX)
 
-        # for i in range(self.num_of_object):
-        #     r = random.random()
+        for i in range(self.num_of_object):
+            r = random.random()
 
-        #     if r <= 0.5:
-        #         self.obj_list.append(Enemy(self.game, 'enemy', (60, 90), (0, 0)))
-        #     elif 0.5 < r <= 0.7:
-        #         self.obj_list.append(Hp_Potion(self.game, 'hp_potion', (60, 90), (0, 0)))
-        #     elif 0.7 < r <= 0.9:
-        #         self.obj_list.append(Ap_Potion(self.game, 'ap_potion', (60, 90), (0, 0)))
-        #     else:
-        #         self.obj_list.append(Chest(self.game, 'chest', (60, 90), (0, 0)))
+            if r <= 0.5:
+                self.obj_list.append(Enemy(self.game, 'enemy', (60, 90), (0, 0)))
+            elif 0.5 < r <= 0.7:
+                self.obj_list.append(Hp_Potion(self.game, 'hp_potion', (60, 90), (0, 0)))
+            elif 0.7 < r <= 0.9:
+                self.obj_list.append(Ap_Potion(self.game, 'ap_potion', (60, 90), (0, 0)))
+            else:
+                self.obj_list.append(Chest(self.game, 'chest', (60, 90), (0, 0)))
 
         self.num_of_object = len(self.obj_list)
 

@@ -5,7 +5,7 @@ import sys
 from scenes.scenemanager import SceneManager
 from scripts.utils import load_image, load_images, Animation
 
-FRAME = 20
+FRAME = 30
 pygame.init()
 
 class Game:
@@ -22,7 +22,7 @@ class Game:
             # 'arrow/left' : Animation(load_images('ui/arrow/left'), loop=True),
             # 'arrow/left_select' : Animation(load_images('ui/arrow/left_select'), loop=True),
             # 'arrow/right' : Animation(load_images('ui/arrow/right'), loop=True),
-            # 'arrow/right_select' : Animation(load_images('ui/arrow/right_select'), loop=True),
+            # 'arrow/right_select' : Animation(load_images('ui/arrow/right_select'), loop=True),    
             'arrow/left' :load_image('ui/arrow/left/00.png'),
             'arrow/left_select' :load_image('ui/arrow/left_select/00.png'),
             'arrow/right' :load_image('ui/arrow/right/00.png'),
@@ -30,6 +30,8 @@ class Game:
             # Hp/Ap
             'hp' : Animation(load_images('ui/hp'), img_dur=10, loop=True),
             'ap' : Animation(load_images('ui/ap'), img_dur=10, loop=True),
+            'hp_base' : load_image('ui/hp_base.png'),
+            'ap_base' : load_image('ui/ap_base.png'),
         }
  
         # Scene 관련 설정

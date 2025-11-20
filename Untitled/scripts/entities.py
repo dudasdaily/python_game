@@ -11,7 +11,7 @@ class Object:
 
         self.kill = False
 
-    def update(self):
+    def update(self, dt):
         pass
 
     def render(self, offset=(0,0)):

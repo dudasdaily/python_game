@@ -1,6 +1,3 @@
-from pydoc import text
-from unittest import TextTestResult
-from networkx import paley_graph
 import pygame
 
 class Hud:
